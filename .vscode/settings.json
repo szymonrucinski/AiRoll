@@ -1,3 +1,15 @@
 {
-    "python.pythonPath": "C:\\Users\\Szymon\\Desktop\\AI\\virtualEnv\\virtualEnv\\Scripts\\python.exe"
+    "python.pythonPath": "d:\\Programowanie\\AI\\virtualEnv\\Scripts\\python.exe",
+    "python.formatting.provider" :"autopep8",
+    "python.linting.pycodestyleEnabled" : true,
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.formatting.autopep8Args": [
+        "--aggressive",
+        "--in-place",
+        "--max-line=length",
+        "120"
+    ],
+    "python.languageServer": "Microsoft"
+
 }
