@@ -3,11 +3,15 @@ import os
 import sys
 import numpy as np
 import requests
+from PIL import Image
 from selenium import webdriver
-from conf import IMAGES_LIMIT, OPTIONS, BASE_DIR, DATASET_DIR, BROWSER
+from conf import IMAGES_LIMIT, BASE_DIR, DATASET_DIR
 
+OPTIONS = webdriver.ChromeOptions()
 OPTIONS.add_experimental_option("excludeSwitches", ["enable-logging"])
-
+BROWSER = webdriver.Chrome(
+    options=OPTIONS, executable_path=r'C:\chromedriver\chromedriver.exe')
+    
 
 def clear():
 
@@ -66,13 +70,13 @@ def mkdir_and_save(images_links, movie_link):
             filename = os.path.basename(f"{folder_name}-{i}.png")
             print(f"Downloading -> {filename}")
             file_path = os.path.join(img_dir, filename)
-            with requests.get(link, stream=True) as r:
+            with requests.get(link, stream=True) as resp:
                 try:
-                    r.raise_for_status()
+                    resp.raise_for_status()
                 except BaseException:
                     continue
                 with open(file_path, 'wb') as f:
-                    for chunk in r.iter_content():
+                    for chunk in resp.iter_content():
                         if chunk:
                             f.write(chunk)
     clear()

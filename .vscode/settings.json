@@ -1,7 +1,8 @@
 {
     "python.pythonPath": "d:\\Programowanie\\AI\\virtualEnv\\Scripts\\python.exe",
-    "python.formatting.provider" :"autopep8",
-    "python.linting.pycodestyleEnabled" : true,
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Path": "d:\\Programowanie\\AI\\virtualEnv\\Scripts\\autopep8.exe",
+    "editor.formatOnSave": true,
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
     "python.formatting.autopep8Args": [
@@ -11,5 +12,4 @@
         "120"
     ],
     "python.languageServer": "Microsoft"
-
 }

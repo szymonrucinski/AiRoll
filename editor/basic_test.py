@@ -20,7 +20,6 @@ max_duration = int(duration) + 1
 
 for i in range(0, max_duration + 1):
     new_img_filepath = os.path.join(thumbnail_dir, f"{i}.png")
-    # print(f"frame at {i} seconds saved at {new_img_filepath}")
     frame = clip.get_frame(i)
     new_img = Image.fromarray(frame)
     new_img.save(new_img_filepath)
