@@ -7,11 +7,13 @@ from PIL import Image
 from selenium import webdriver
 from conf import IMAGES_LIMIT, BASE_DIR, DATASET_DIR
 
+
 OPTIONS = webdriver.ChromeOptions()
 OPTIONS.add_experimental_option("excludeSwitches", ["enable-logging"])
 BROWSER = webdriver.Chrome(
     options=OPTIONS, executable_path=r'C:\chromedriver\chromedriver.exe')
-    
+ALL_ROOT_LINKS = []
+ALL_PHOTOS = []
 
 def clear():
 
@@ -52,10 +54,10 @@ def go_to_movie_page(movie_link):
     mkdir_and_save(images_links, movie_link)
 
 
-def save_links_to_file(links):
+def save_links_to_file(links, fileName):
     print("Saving")
     Array = np.array(links)
-    np.savetxt(os.path.join(BASE_DIR, "links.txt"), np.array(Array), fmt="%s")
+    np.savetxt(os.path.join(BASE_DIR, f"{fileName}"), np.array(Array), fmt="%s")
 
 
 def mkdir_and_save(images_links, movie_link):
@@ -86,6 +88,15 @@ def download_completed():
     print("FINISHED OBTAINING DATA")
     sys.exit()
 
+def construct_db(root_links, img_links):
+    new_arr = []
+    for link in root_links:
+        new_arr.append(f'collection_id:{get_movie_name_from_url(root_links)}')
+        new_arr.append(f'frame_id:{get_movie_name_from_url(root_links)}')
+        new_arr.append(f'frame_url:')
+
+    # save_links_to_file(new_arr)
+
 
 def main():
     main_page = 'https://film-grab.com/movies-a-z/'
@@ -100,7 +111,9 @@ def main():
         if not os.path.exists(movie_folder):
             filtered_links.append(link)
 
-    save_links_to_file(links)
+    save_links_to_file(links, 'links.json')
+ 
+        
 
     for movie_link in filtered_links:
         go_to_movie_page(movie_link)

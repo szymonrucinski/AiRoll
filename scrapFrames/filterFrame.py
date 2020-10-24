@@ -1,7 +1,6 @@
 from tkinter import *
 from conf import DATASET_DIR
 from pathlib import Path
-import face_recognition
 from PIL import ImageTk, Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
