@@ -1,16 +1,16 @@
 {
-    "python.pythonPath": "d:\\Programowanie\\AI\\virtualEnv\\Scripts\\python.exe",
+    "python.pythonPath": "${workspaceFolder}/virtualEnv",
     "python.formatting.provider": "autopep8",
-    "python.formatting.autopep8Path": "d:\\Programowanie\\AI\\virtualEnv\\Scripts\\autopep8.exe",
+    "python.formatting.autopep8Path": "${workspaceFolder}/virtualEnv/Scripts/autopep8",
     "editor.formatOnSave": true,
     "pythonTestExplorer.testFramework": "pytest",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
     "python.formatting.autopep8Args": [
-        "--aggressive",
         "--in-place",
-        "--max-line=length",
-        "120"
+        "--max-line-length",
+        "120",
     ],
-    "python.languageServer": "Microsoft"
+    "python.languageServer": "Microsoft",
+    "python.linting.pylintEnabled": true
 }
