@@ -9,6 +9,7 @@ KEY_DIR = os.path.join(BASE_DIR, KEY_NAME)
 
 CRED = credentials.Certificate(KEY_DIR)
 firebase_admin.initialize_app(CRED)
+DB = firestore.client()
 
 
 def writing_to_db(movie_name, frame_name, frame_url):
