@@ -16,13 +16,11 @@ describe("Test Firebase connection", () => {
   it("should return list of all movies from DB", async () => {
     firebase.initializeApp(config);
     const db = firebase.firestore();
-    const fetched_docs = await db
-      .collection("0A_LIST_OF_MOVIES")
-      .doc("12-dad-men")
-      .get();
-    console.log(fetched_docs);
-    expect("Hello World!").to.equal("Hello World!");
+    const citiesRef = db.collection("0A_LIST_OF_MOVIES");
+    const snapshot = await citiesRef.get();
+    snapshot.forEach((doc) => {
+      console.log(doc.id, "=>", doc.data());
+    });
+    expect("HelloWorld").to.equal("Hello World!");
   });
 });
-
-export default firebase;
