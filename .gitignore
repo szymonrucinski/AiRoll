@@ -61,6 +61,7 @@ target/
 *.mp4
 *.mp3
 *.png
+*.wav
 *.jpg
 
 
