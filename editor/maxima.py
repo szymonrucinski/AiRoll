@@ -29,6 +29,4 @@ def findLocalMaximaMinima(n, arr):
         mn.append(arr[n-1])  
   
         # Print all the local maxima and  
-    print(mn)
-    print(mx)
     return mx

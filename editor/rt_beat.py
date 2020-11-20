@@ -45,6 +45,10 @@ def beat_detect(in_data):
 
     audio_fft = np.abs((np.fft.fft(audio)[0:int(len(audio)/2)])/len(audio))
     freqs = fs*np.arange(len(audio)/2)/len(audio)
+    # print(freqs[0:15])
+    # print(fs)
+    # print(freqs[0]-freqs[1])
+    # print(freqs[-2]-freqs[-1])
     # time.sleep(20)
     
     # Frequency Ranges for each important audio group
@@ -56,7 +60,6 @@ def beat_detect(in_data):
     upper_midrange_indices = [idx for idx,val in enumerate(freqs) if val >= 2000 and val <= 4000]
     presence_indices = [idx for idx,val in enumerate(freqs) if val >= 4000 and val <= 6000]
     brilliance_indices = [idx for idx,val in enumerate(freqs) if val >= 6000 and val <= 20000]
-    print(bass_indices)
     # print(audio_fft[sub_bass_indices])
     sub_bass = np.max(audio_fft[sub_bass_indices])
     bass = np.max(audio_fft[bass_indices])
