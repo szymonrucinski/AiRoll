@@ -9,25 +9,23 @@ KEY_DIR = os.path.join(BASE_DIR, KEY_NAME)
 
 CRED = credentials.Certificate(KEY_DIR)
 firebase_admin.initialize_app(CRED)
+DB = firestore.client()
 
 
 def writing_to_db(movie_name, frame_name, frame_url):
     list_ref = DB.collection('0A_LIST_OF_MOVIES').document(movie_name)
-    list_ref.set({'was_tested': 0})
+    list_ref.set({'wasTested': 0, 'isBeingReviewed':False})
 
     doc_ref = DB.collection(movie_name).document(frame_name)
     doc_ref.set({
-        u'frame_url': frame_url,
-        u'wideshot': 0,
-        u'extreme_wide_shot': 0,
-        u'long_shot': 0,
-        u'medium_shot': 0,
-        u'medium_close_up': 0,
-        u'medium_long_shot': 0,
-        u'close_up': 0,
-        u'extreme_close_up': 0,
+        u'frameUrl': frame_url,
+        u'extremeLongShot': 0,
+        u'longshot': 0,
+        u'fullshot':0,
+        u'mediumShot': 0,
+        u'closeUp': 0,
+        u'detail': 0,
     })
-    doc = doc_ref.get()
 
 
 def updating_db():
@@ -55,20 +53,27 @@ def get_names_of_all_collection_in_db():
 
 def writing_a_title_to_movie_list(movie_name, frame_name, frame_url):
     list_ref = DB.collection(u'0A_LIST_OF_MOVIES').document(u'titles')
-    list_ref.set({f'{movie_name}': 0})
+    list_ref.set({f'{movie_name}': 0,'isBeingReviewed':False,'wasTested': 0})
     doc_ref = DB.collection(movie_name).document(frame_name)
     doc_ref.set({
-        u'frame_url': frame_url,
-        u'wideshot': 0,
-        u'extreme_wide_shot': 0,
-        u'long_shot': 0,
-        u'medium_shot': 0,
-        u'medium_close_up': 0,
-        u'medium_long_shot': 0,
-        u'close_up': 0,
-        u'extreme_close_up': 0,
+        u'frameUrl': frame_url,
+        u'extremeLongShot': 0,
+        u'longshot': 0,
+        u'fullshot':0,
+        u'mediumShot': 0,
+        u'closeUp': 0,
+        u'detail': 0,
     })
 
+def set_all_to_is_beingReviewed_to_false():
+    all_titles = get_names_of_all_collection_in_db()
+    for title in all_titles:
+         doc_ref = DB.collection(u'0A_LIST_OF_MOVIES').document(title)
+         doc_ref.update({
+        u'isBeingReviewed': False,
+    })
+
+set_all_to_is_beingReviewed_to_false()
 
 def delete_documents_in_collection(coll_name):
     batch_size = 100

@@ -15,7 +15,7 @@ BROWSER = webdriver.Chrome(
     options=OPTIONS, executable_path=r'C:\chromedriver\chromedriver.exe')
 ALL_ROOT_LINKS = []
 ALL_PHOTOS = []
-
+MAX_NUMBER_OF_FRAMES = 25
 
 def clear_cli():
 
@@ -77,8 +77,11 @@ def mkdir_and_save(images_links, movie_link):
         download_completed()
     print(f"Adding {folder_name} to database ╰(*°▽°*)╯.")
     for i, link in enumerate(images_links):
-        file_name = os.path.basename(f"{folder_name}-{i}.png")
-        writing_to_db(folder_name, file_name, link)
+        if i is MAX_NUMBER_OF_FRAMES:
+            break;
+        else:
+            file_name = os.path.basename(f"{folder_name}-{i}.png")
+            writing_to_db(folder_name, file_name, link)
     clear_cli()
 
 
@@ -105,7 +108,7 @@ def main():
 
     for movie_link in filtered_links:
         go_to_movie_page(movie_link)
-        time.sleep(5)
+        time.sleep(15)
 
 
 main()
