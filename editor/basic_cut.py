@@ -65,4 +65,13 @@ def saveFramesToImages():
             new_img.save(new_img_filepath)
 
 
+def main():
+    detect_peaks('path')
+    #   [{beginning:20.000, end:44.100,used: boolean}]
+    #   convert to numpy array of video
+    # remove 10s between [movie_movie_movie_movie_movie]
 
+    #get
+    #[0-20.000] -> [20.0001-44.100]
+    #calculate length
+def get_cuts_position(audio):
