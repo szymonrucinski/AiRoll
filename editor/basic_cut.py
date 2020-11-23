@@ -1,7 +1,26 @@
-from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS
+from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT
 from moviepy.editor import *
 from PIL import Image
+import librosa
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.io.wavfile import write
+import scipy.signal
+import scipy
+import librosa 
+import IPython.display as ipd
+from playsound import playsound
+import numpy as np
+from audio_component.detect_peaks import detect_peaks
+import matplotlib.pyplot as plt
 
+
+arr = np.array([1,2,5,6,7,8,12,516,3])
+detect_peaks(arr, mph = 1, mpd =1)
+# indexes = detect_peaks(x, mph = 0.9, mpd=sr/2)
+
+audio_dept = os.path.join(AUDIO_DEPT, 'mov')
 source_path = os.path.join(SAMPLE_INPUTS, 'movie.mp4')
 thumbnail_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails")
 os.makedirs(thumbnail_dir, exist_ok=True)
@@ -45,4 +64,5 @@ def saveFramesToImages():
             new_img = Image.fromarray(frame)
             new_img.save(new_img_filepath)
 
- 
+
+
