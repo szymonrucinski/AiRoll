@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "${workspaceFolder}/virtualEnv",
+    "python.pythonPath": "C:\\Users\\Szymon\\anaconda3\\envs\\shot-classifier\\python.exe",
     "python.formatting.provider": "autopep8",
     "python.formatting.autopep8Path": "${workspaceFolder}/virtualEnv/Scripts/autopep8",
     "editor.formatOnSave": true,

@@ -1,6 +1,7 @@
 from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT
 from moviepy.editor import *
 from PIL import Image
+import random
 import cv2
 import librosa
 import numpy as np
@@ -17,79 +18,81 @@ import numpy as np
 import matplotlib.pyplot as plt
 from audio_component.get_audio_peaks import get_audio_peaks
 
-video_path = os.path.join(SAMPLE_INPUTS, 'movie.mp4')
-audio_path = os.path.join(SAMPLE_INPUTS, 'africa-toto.wav')
+video_path = os.path.join(SAMPLE_INPUTS, 'videoplayback.mp4')
 song_path = os.path.join(SAMPLE_INPUTS, 'song.mp3')
-
-
 thumbnail_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails")
 os.makedirs(thumbnail_dir, exist_ok=True)
-thumbnail_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails")
-thumbnail_per_frame_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails-per-frame")
-thumbnail_per_half_second_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails-per-half-second")
-#getAll frames
-# for i in range(0, max_duration):
-# # for i in range(0, max_duration + 1):
-#     current_ms = int((i/fps) * 1000)
-#     print(current_ms)
-#     # if i % fps == 0:
-#     # current_ms = int((i/fps) * 1000)
-#     new_img_filepath = os.path.join(thumbnail_dir, f"{current_ms}.png")
-#     frame = clip.get_frame(i)
-#     new_img = Image.fromarray(frame)
-#     new_img.save(new_img_filepath)
-
-# def saveFramesToImages(cut_list):
-#     for i, frame in enumerate(clip.iter_frames()):
-#         # print(i, frame)
-#         fphs = int(fps/2)
-#         if i % fphs == 0:
-#             current_ms = int((i / fps) * 1000)
-#             new_img_filepath = os.path.join(SAMPLE_OUTPUTS, f"{current_ms}.jpg")
-#             # print(f"frame at {i} seconds saved at {new_img_filepath}")
-#             new_img = Image.fromarray(frame)
-#             new_img.save(new_img_filepath)
-
+MAX_LEN = 30
 
 def main():
     loaded_clip = VideoFileClip(video_path)
-    loaded_music = AudioFileClip(audio_path)
     duration = loaded_clip.duration
-    fps = loaded_clip.reader.fps
+    frame_rate = loaded_clip.reader.fps
     nframes = loaded_clip.reader.nframes
-    seconds = nframes / (fps*1.0)
-    cut_list = get_audio_peaks(audio_path, fps)
-    new_sequence = []
-    print(type(new_sequence))
-
-    for i,frame in enumerate(loaded_clip.iter_frames()):
-        if i%2 ==0:
-            new_sequence.append(np.ones([1080,1920,3]))
-            # new_sequence.append(frame)
-        else:
-            new_sequence.append(frame)
+    seconds = nframes / (frame_rate*1.0)
+    cut_list = get_audio_peaks(song_path, frame_rate)
+    print(cut_list)
+    print(len(cut_list))
 
 
+    start = []
+    print("Rendering")
+    for i ,frame in enumerate(loaded_clip.iter_frames()):
+        start.append(frame)
+        # num1 = random.randint(0, nframes)
 
-        # gray_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-        # print(type(gray_frame))
-        # print(np.shape(gray_frame))
-    
+        # print(cut_list[i])
 
-    clips = [ImageClip(frame).set_duration(1/25) for frame in new_sequence]
+        # if i== 300:
+        #     break
+        # if i <0 and i>500:
+        #     start.append(frame)
+        # elif i>4000 and i<4500:
+        #     start.append(frame)
+        # elif i>6000 and i<6500:
+        #     start.append(frame)
+
+
+
+        # if i%2 == 0:
+        # np.append(new_sequence, np.ones((360,640,3))*255)
+        # else:
+        # print(frame)
+        #     print(type(frame))
+        #     print(np.shape(frame))
+            # time.sleep(5)
+        # print(i)
+        # if i == 300:
+        #     i = i + 100
+
+        # if i == 500: 
+        #     break
+    render_sequence = []
+    print(len(start))
+    for i ,frame in enumerate(start):
+        rand_num = random.randint(0, len(start)-1000)
+        number_of_frames = cut_list[i]['cut_end'] - cut_list[i]['cut_start']
+        print(number_of_frames)
+        counter = 0
+        while(counter<= number_of_frames):
+            render_sequence.append(start[rand_num+counter])
+            print(rand_num+counter)
+            counter=counter+1
+        if i== len(cut_list)-1:
+            break
+
+    print('done')
+    # print(np.shape(loaded_clip.iter_frames()))
+    clips = [ImageClip(frame).set_duration(1/frame_rate) for frame in render_sequence]
+    # print(new_sequence)
     concat_clip = concatenate_videoclips(clips, method="compose")
-    # concat_clip.set_audio(loaded_clip)
-        # ImageClip(concat_clip).set_audio(audio_path)
-    concat_clip.write_videofile("test.mp4",audio=song_path, codec="mpeg4",fps=25)
-
-    # frames = np.asarray(new_sequence, dtype = None, order = None)
-    # print(type(frames), np.shape(frames))
-    # print(frames[1])
-    # time.sleep(5)
-    # work_clip = ImageSequenceClip(frames[2], fps=6)
-    #         # print(frame)
-
-    # work_clip.write_videofile("render.mp4")
+    # del new_sequence
+    # del new_sequence
+    print(sys.getsizeof(clips))
+    # del clips
+    # loaded_music.set_duration(concat_clip)
+    # ImageClip(concat_clip).set_audio(audio_path)
+    concat_clip.write_videofile("2nd_test.mp4", audio=song_path, codec="mpeg4", fps=frame_rate)
 
 
 main()
