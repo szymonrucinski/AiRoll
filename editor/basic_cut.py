@@ -1,9 +1,12 @@
-from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT
+from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT, BASE_DIR
 from moviepy.editor import *
 from PIL import Image
 import random
+from fastai.vision.all import *
 import cv2
 import librosa
+from PIL import ImageFont
+from PIL import ImageDraw 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -13,31 +16,35 @@ import scipy
 import librosa 
 import time
 import IPython.display as ipd
-from playsound import playsound
 import numpy as np
 import matplotlib.pyplot as plt
+from video_controller import Video_controller
 from audio_component.get_audio_peaks import get_audio_peaks
 
+learn = load_learner('D:\Programowanie\AI\editor\model.pkl')
 video_path = os.path.join(SAMPLE_INPUTS, 'videoplayback.mp4')
+model = os.path.join(BASE_DIR, 'model.pkl')
 song_path = os.path.join(SAMPLE_INPUTS, 'song.mp3')
 thumbnail_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails")
 os.makedirs(thumbnail_dir, exist_ok=True)
 MAX_LEN = 30
 
 def main():
-    loaded_clip = VideoFileClip(video_path)
-    duration = loaded_clip.duration
-    frame_rate = loaded_clip.reader.fps
-    nframes = loaded_clip.reader.nframes
-    seconds = nframes / (frame_rate*1.0)
-    cut_list = get_audio_peaks(song_path, frame_rate)
-    print(cut_list)
-    print(len(cut_list))
-
+    vc = Video_controller(video_path)
+    time.sleep(5)
+    cut_list = get_audio_peaks(song_path, vc.get_fps())
 
     start = []
     print("Rendering")
-    for i ,frame in enumerate(loaded_clip.iter_frames()):
+    f_path = 'C:\\WINDOWS\FONTS\AGENCYR.TTF'
+    font = ImageFont.truetype(f_path, 50)
+    for i ,frame in enumerate(vc.clip.iter_frames()):
+        n_img = Image.fromarray(frame, 'RGB')
+        draw = ImageDraw.Draw(n_img)
+        draw.text((0, 0),str(learn.predict(frame)[0]),(255,255,255),font)
+        # n_img.show()
+        print(i)
+        frame = np.array(n_img)
         start.append(frame)
         # num1 = random.randint(0, nframes)
 
@@ -68,31 +75,30 @@ def main():
         # if i == 500: 
         #     break
     render_sequence = []
-    print(len(start))
-    for i ,frame in enumerate(start):
-        rand_num = random.randint(0, len(start)-1000)
-        number_of_frames = cut_list[i]['cut_end'] - cut_list[i]['cut_start']
-        print(number_of_frames)
-        counter = 0
-        while(counter<= number_of_frames):
-            render_sequence.append(start[rand_num+counter])
-            print(rand_num+counter)
-            counter=counter+1
-        if i== len(cut_list)-1:
-            break
+    # print(len(start))
+    # for i ,frame in enumerate(start):
+    #     rand_num = random.randint(0, len(start)-10)
+    #     number_of_frames = cut_list[i]['cut_end'] - cut_list[i]['cut_start']
+    #     print(number_of_frames)
+    #     counter = 0
+    #     while(counter<= number_of_frames):
+    #         render_sequence.append(start[rand_num+counter])
+    #         print(rand_num+counter)
+    #         counter=counter+1
+    #     if i== len(cut_list)-1:
+    #         break
 
-    print('done')
+    # print('done')
     # print(np.shape(loaded_clip.iter_frames()))
-    clips = [ImageClip(frame).set_duration(1/frame_rate) for frame in render_sequence]
+    clips = [ImageClip(frame).set_duration(1/frame_rate) for frame in start]
     # print(new_sequence)
     concat_clip = concatenate_videoclips(clips, method="compose")
     # del new_sequence
     # del new_sequence
-    print(sys.getsizeof(clips))
     # del clips
     # loaded_music.set_duration(concat_clip)
     # ImageClip(concat_clip).set_audio(audio_path)
-    concat_clip.write_videofile("2nd_test.mp4", audio=song_path, codec="mpeg4", fps=frame_rate)
+    concat_clip.write_videofile("2nd_test.mp4", audio=song_path, codec="libx264", fps=frame_rate)
 
 
 main()
