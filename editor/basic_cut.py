@@ -1,51 +1,25 @@
 from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT, BASE_DIR
 from moviepy.editor import *
 from PIL import Image
-import random
 from copy import deepcopy
 from fastai.vision.all import *
 import cv2
 import librosa
-from PIL import ImageFont
-from PIL import ImageDraw 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.io.wavfile import write
-import scipy.signal
-import scipy
 import librosa
-from colorthief import ColorThief
 import time
-import IPython.display as ipd
 import numpy as np
 import matplotlib.pyplot as plt
+from video_stab import get_stable_footage
 from video_controller import Video_controller
 from audio_component.get_audio_peaks import get_audio_peaks
 from editing_tool import Editing_tool
-from scenedetect import VideoManager
-from scenedetect import SceneManager
-from scenedetect.detectors import ContentDetector
 
-# video_path = os.path.join(SAMPLE_INPUTS, 'videoplayback.mp4')
 model_path = os.path.join(BASE_DIR, 'model.pkl')
 song_path = os.path.join(SAMPLE_INPUTS, 'song.mp3')
-thumbnail_dir = os.path.join(SAMPLE_OUTPUTS, "thumbnails")
-os.makedirs(thumbnail_dir, exist_ok=True)
 
-def find_scenes(video_path, threshold=10):
-    video_manager = VideoManager([video_path])
-    scene_manager = SceneManager()
-    scene_manager.add_detector(
-        ContentDetector(threshold=threshold))
-
-    base_timecode = video_manager.get_base_timecode() 
-    video_manager.set_downscale_factor()
-    video_manager.start()
-    scene_manager.detect_scenes(frame_source=video_manager)
-    return scene_manager.get_scene_list(base_timecode)
-
-def init(video_paths, MAX_LEN):
+def init(video_paths):
     edit_tl = Editing_tool('D:\Programowanie\AI\shot_classifier\model.pkl')
     render_sequence = []
     vc = None
@@ -54,7 +28,6 @@ def init(video_paths, MAX_LEN):
     cut_list_used_once = False
     cut_list = None
     for video_path in video_paths:
-
         vc = Video_controller(video_path)
 
         if cut_list_used_once == False :
@@ -66,25 +39,21 @@ def init(video_paths, MAX_LEN):
             cut_list = new_list
             cut_list_used_once = True
 
-        scene_cut_list = find_scenes(video_path)
-        print(scene_cut_list)
+        # scene_cut_list = find_scenes(video_path)
+        # print(scene_cut_list)
         whole_movie = []
         slices = []
         sorted_cuts = []
-        MAX_LEN = int(MAX_LEN * vc.get_fps())
 
         for i,frame in enumerate(vc.clip.iter_frames()):
             whole_movie.append(frame)
+        usable_part = get_stable_footage(video_path)
+        whole_movie = whole_movie[usable_part[0]:usable_part[-1]]
+        # edit_tl.detect_blur(whole_movie, round(vc.get_fps()*2))
 
-        for i, scene in enumerate(scene_cut_list):
-            sub_clip = whole_movie[scene[0].get_frames() : scene[1].get_frames()]
-            #statistical check
-            if edit_tl.learn.predict(sub_clip[0])[0] == edit_tl.learn.predict(sub_clip[1])[0]:
-                all_subclips[edit_tl.learn.predict(sub_clip[0])[0]].append(sub_clip)
-        # for i in proper_order:
-        #     flat_list = [item for sublist in all_subclips[i] for item in sublist]
-        #     render_sequence= flat_list+render_sequence
-        #     print('ok')
+        print('added {}'.format(video_path))
+        all_subclips[edit_tl.learn.predict(whole_movie[-1])[0]].append(whole_movie)
+ 
     
     all_subclips_copy = deepcopy(all_subclips)
     for i in all_subclips_copy:
@@ -94,21 +63,17 @@ def init(video_paths, MAX_LEN):
     counter = 0
     done = False
 
-    # while True:
-    #     if done == True:
-    #         break
     for i, tup in enumerate(cut_list):
         proper_order = list(all_subclips.keys())
-        size = len(proper_order)
-        number_of_frames = cut_list[i]['cut_end'] - cut_list[i]['cut_start']
+        if proper_order == []:
+            break
+        size = len(proper_order) 
         l = i
-        key = proper_order[l % size]
+        number_of_frames = cut_list[i]['cut_end'] - cut_list[i]['cut_start']
+        if size == 0: key = proper_order[0]
+        else: key = proper_order[(l % size)]
+        print(key)
         cur_shot = all_subclips[key]
-        print(l % size)
-        if len(cur_shot) == 0:
-            del all_subclips[key]
-            l = i + 1
-            key = proper_order[l % size]
         done = True
         print(done)
         for j,scene in enumerate(cur_shot):
@@ -116,23 +81,13 @@ def init(video_paths, MAX_LEN):
                 chunk = cur_shot.pop(j)
                 print(np.shape(chunk), 'chunk')
                 print(np.shape(cur_shot), 'cur_shot')
-                render_sequence = render_sequence + edit_tl.detect_blur(chunk, number_of_frames)
-                counter = len(render_sequence)
+                render_sequence = render_sequence + chunk
                 counter = len(chunk) + counter
                 print(counter)
                 break
-                # print(key)
-                # print(counter)
                 print(number_of_frames,len(chunk))
-                # done = False
-                # break
-            # if done == True:
-            #     print('EXIT')
-            #     break
 
-            
 
-    print('Hello')
     clips = [ImageClip(frame).set_duration(1/vc.get_fps()) for frame in render_sequence]
     concat_clip = concatenate_videoclips(clips, method="compose")
     concat_clip.write_videofile("2nd_test.mp4", audio=song_path, codec="libx264", fps=vc.get_fps())

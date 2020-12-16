@@ -48,7 +48,7 @@ class Editing_tool:
         lap_values.sort(key = lambda x: x[0], reverse=True)
 
         for i, val in enumerate(lap_values):
-            if val[1]/number_of_frames >=1 and (val[0]-number_of_frames)>=0:
+            if  val[1] + number_of_frames -1 <= len(chunk):
                 print('CUT ON MOTION')
                 ind1 = val[1]
                 ind2 = val[1] + number_of_frames - 1
