@@ -101,3 +101,5 @@ def get_stable_footage(video_path):
     container = [x for x in container if x]
     container.sort(key=len, reverse=True)
     return (container[0][0],container[0][-1])
+
+get_stable_footage('')
