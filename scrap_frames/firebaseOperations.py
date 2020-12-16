@@ -6,6 +6,8 @@ from fastai.vision.all import *
 from firebase_admin import credentials
 from firebase_admin import firestore
 import requests
+import matplotlib.pyplot as plt
+
 
 BASE_DIR = os.path.join(os.path.dirname(__file__))
 KEY_NAME = os.path.basename("key.json")

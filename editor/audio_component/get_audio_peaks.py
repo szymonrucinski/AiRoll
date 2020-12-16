@@ -13,8 +13,8 @@ import librosa
 import numpy as np
 from audio_component.detect_peaks import detect_peaks
 
-MIN_CUT_LEN = 0.3
-MAX_CUT_LEN = 3
+MIN_CUT_LEN = 0.5
+MAX_CUT_LEN = 4
 
 def get_audio_peaks(path, frame_rate):
     x, sr = librosa.load(path)
