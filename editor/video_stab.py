@@ -55,7 +55,10 @@ def get_stable_footage(video_path):
       curr_pts = curr_pts[idx]
 
       #Find transformation matrix
-      m = cv2.estimateRigidTransform(prev_pts, curr_pts, fullAffine=False) #will only work with OpenCV-3 or less
+    #   m = cv2.estimateRigidTransform(prev_pts, curr_pts, fullAffine=False) 
+      #will only work with OpenCV-3 or less
+      m, inliers = cv2.estimateAffinePartial2D(prev_pts, curr_pts)
+
       # Extract traslation
       dx = m[0,2]
       dy = m[1,2]
@@ -102,4 +105,3 @@ def get_stable_footage(video_path):
     container.sort(key=len, reverse=True)
     return (container[0][0],container[0][-1])
 
-get_stable_footage('')

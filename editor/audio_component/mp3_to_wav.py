@@ -2,9 +2,9 @@ from os import path
 from pydub import AudioSegment
 
 # files                                                                         
-src = "transcript.mp3"
+# src = "C:\Users\Szymon\Downloads\download.wab"
 dst = "test.wav"
 
 # convert wav to mp3                                                            
-sound = AudioSegment.from_mp3(src)
+sound = AudioSegment.from_wav(src)
 sound.export(dst, format="wav")
