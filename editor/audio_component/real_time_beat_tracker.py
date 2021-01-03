@@ -44,17 +44,24 @@ brilliance_beat = False
 def beat_detect(in_data):
     audio = wavio._wav2array(channels, bytes_per_sample, in_data)
 
-    audio_fft = np.abs((np.fft.fft(audio)[0:int(len(audio)/2)])/len(audio))
-    freqs = fs*np.arange(len(audio)/2)/len(audio)
-    
+    audio_fft = np.abs((np.fft.fft(audio)[0:int(len(audio) / 2)]) / len(audio))
+    freqs = fs * np.arange(len(audio) / 2) / len(audio)
+
     # Frequency Ranges for each important audio group
-    sub_bass_indices = [idx for idx,val in enumerate(freqs) if val >= 20 and val <= 60]
-    bass_indices = [idx for idx,val in enumerate(freqs) if val >= 60 and val <= 250]
-    low_midrange_indices = [idx for idx,val in enumerate(freqs) if val >= 250 and val <= 500]
-    midrange_indices = [idx for idx,val in enumerate(freqs) if val >= 500 and val <= 2000]
-    upper_midrange_indices = [idx for idx,val in enumerate(freqs) if val >= 2000 and val <= 4000]
-    presence_indices = [idx for idx,val in enumerate(freqs) if val >= 4000 and val <= 6000]
-    brilliance_indices = [idx for idx,val in enumerate(freqs) if val >= 6000 and val <= 20000]
+    sub_bass_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 20 and val <= 60]
+    bass_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 60 and val <= 250]
+    low_midrange_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 250 and val <= 500]
+    midrange_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 500 and val <= 2000]
+    upper_midrange_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 2000 and val <= 4000]
+    presence_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 4000 and val <= 6000]
+    brilliance_indices = [idx for idx, val in enumerate(
+        freqs) if val >= 6000 and val <= 20000]
 
     # print(audio_fft[sub_bass_indices])
     sub_bass = np.max(audio_fft[sub_bass_indices])
@@ -78,46 +85,46 @@ def beat_detect(in_data):
     presence_max = max(presence_max, presence)
     brilliance_max = max(brilliance_max, brilliance)
 
-    if sub_bass >= sub_bass_max*.9 and not sub_bass_beat:
+    if sub_bass >= sub_bass_max * .9 and not sub_bass_beat:
         sub_bass_beat = True
         print("Sub Bass Beat")
-    elif sub_bass < sub_bass_max*.3:
+    elif sub_bass < sub_bass_max * .3:
         sub_bass_beat = False
 
-    if bass >= bass_max*.9 and not bass_beat:
+    if bass >= bass_max * .9 and not bass_beat:
         bass_beat = True
         print("Bass Beat")
-    elif bass < bass_max*.3:
+    elif bass < bass_max * .3:
         bass_beat = False
 
-    if low_midrange >= low_midrange_max*.9 and not low_midrange_beat:
+    if low_midrange >= low_midrange_max * .9 and not low_midrange_beat:
         low_midrange_beat = True
         print("Low Midrange Beat")
-    elif low_midrange < low_midrange_max*.3:
+    elif low_midrange < low_midrange_max * .3:
         low_midrange_beat = False
 
-    if midrange >= midrange_max*.9 and not midrange_beat:
+    if midrange >= midrange_max * .9 and not midrange_beat:
         midrange_beat = True
         print("Midrange Beat")
-    elif midrange >= midrange_max*.3:
+    elif midrange >= midrange_max * .3:
         midrange_beat = False
 
-    if upper_midrange >= upper_midrange_max*.9 and not upper_midrange_beat:
+    if upper_midrange >= upper_midrange_max * .9 and not upper_midrange_beat:
         upper_midrange_beat = True
         print("Upper Midrange Beat")
-    elif upper_midrange < upper_midrange_max*.3:
+    elif upper_midrange < upper_midrange_max * .3:
         upper_midrange_beat = False
 
-    if presence >= presence_max*.9 and not presence_beat:
+    if presence >= presence_max * .9 and not presence_beat:
         presence_beat = True
         print("Presence Beat")
-    elif presence < presence_max*.3:
+    elif presence < presence_max * .3:
         presence_beat = False
 
-    if brilliance >= brilliance_max*.9 and not brilliance_beat:
+    if brilliance >= brilliance_max * .9 and not brilliance_beat:
         brilliance_beat = True
         print("Brilliance Beat")
-    elif brilliance < brilliance_max*.3:
+    elif brilliance < brilliance_max * .3:
         brilliance_beat = False
 
     primary_freq = freqs[np.argmax(audio_fft)]
@@ -129,6 +136,7 @@ def callback(in_data, frame_count, time_info, status):
     data = wf.readframes(frame_count)
     beat_detect(data)
     return (data, pyaudio.paContinue)
+
 
 # open stream using callback (3)
 stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),

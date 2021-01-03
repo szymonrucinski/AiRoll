@@ -4,12 +4,14 @@ import tkinter
 import gobject
 import gst
 
+
 def on_sync_message(bus, message, window_id):
-        if not message.structure is None:
-            if message.structure.get_name() == 'prepare-xwindow-id':
-                image_sink = message.src
-                image_sink.set_property('force-aspect-ratio', True)
-                image_sink.set_xwindow_id(window_id)
+    if message.structure is not None:
+        if message.structure.get_name() == 'prepare-xwindow-id':
+            image_sink = message.src
+            image_sink.set_property('force-aspect-ratio', True)
+            image_sink.set_xwindow_id(window_id)
+
 
 gobject.threads_init()
 
@@ -17,7 +19,11 @@ window = tkinter.Tk()
 window.geometry('500x400')
 
 video = tkinter.Frame(window, bg='#000000')
-video.pack(side=tkinter.BOTTOM,anchor=tkinter.S,expand=tkinter.YES,fill=tkinter.BOTH)
+video.pack(
+    side=tkinter.BOTTOM,
+    anchor=tkinter.S,
+    expand=tkinter.YES,
+    fill=tkinter.BOTH)
 
 window_id = video.winfo_id()
 
