@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import PIL
 import moviepy
+from collections import Counter 
 from fastai.vision.all import *
 from PIL import ImageFont
 from PIL import ImageDraw
@@ -16,10 +17,20 @@ class Editing_tool:
         start = []
         f_path = 'C:\\WINDOWS\FONTS\AGENCYR.TTF'
         font = ImageFont.truetype(f_path, 50)
-        for i ,frame in enumerate(clip.iter_frames()):
+        evaluate_shot = clip[::30]
+        verdict = []
+        for frame in evaluate_shot:
+            verdict.append(str(self.learn.predict(frame)[0]))
+        
+        counter = Counter(verdict) 
+        verdict = counter.most_common(1)
+        print('It is a ',verdict[0][0])
+
+
+        for i ,frame in enumerate(clip):
             n_img = Image.fromarray(frame, 'RGB')
             draw = ImageDraw.Draw(n_img)
-            draw.text((0, 0),str(self.learn.predict(frame)[0]),(255,255,255),font)
+            draw.text((0, 0),verdict[0][0],(255,255,255),font)
             frame = np.array(n_img)
             start.append(frame)
         return start

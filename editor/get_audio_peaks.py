@@ -16,7 +16,7 @@ import glob
 from sys import platform
 import shutil
 import os
-import IPython.display as ipd
+import librosa.display
 from conf import SAMPLE_OUTPUTS
 
 
@@ -25,12 +25,10 @@ MAX_CUT_LEN = 4
 
 def get_audio_peaks(path, frame_rate):
     x, sr = librosa.load(get_isolated_drums(path))
-    onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=20, post_avg=20, pre_max=30, post_max=30)
-    clicks = librosa.clicks(frames=onset_frames, sr=sr, length=len(x))
-    ipd.Audio(x + clicks, rate=sr)
+    # onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=1, post_avg=1, pre_max=1, post_max=1)
+    onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=30, post_avg=1, pre_max=30, post_max=1, backtrack=True)
 
     print(onset_frames)
-    # onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=1, post_avg=1, pre_max=1, post_max=1)
     onset_times = librosa.frames_to_time(onset_frames)
     onset_times = onset_times*frame_rate
     onset_times = onset_times.astype(int)
@@ -38,7 +36,7 @@ def get_audio_peaks(path, frame_rate):
 
     for i, value in enumerate(onset_times):
      for j,checked in enumerate(onset_times):
-        if checked - value >= frame_rate*0.8 and len(new_time_list) == 0:
+        if checked - value >= frame_rate and len(new_time_list) == 0:
             new_time_list.append(checked)
             break
         if len(new_time_list)>0 and checked - new_time_list[-1] >= frame_rate:
@@ -47,7 +45,7 @@ def get_audio_peaks(path, frame_rate):
     
     new_time_list = sorted(set(new_time_list))
     output_path = f'{SAMPLE_OUTPUTS}\\trimmed.mp3'
-    trim_audio = f'ffmpeg -i {path} -ss {new_time_list[0]/25} -to {new_time_list[-1]/25} -c copy {output_path}'
+    trim_audio = f'ffmpeg -i {path} -ss {new_time_list[0]/frame_rate} -to {new_time_list[-1]/frame_rate} -c copy {output_path}'
     subprocess.run(trim_audio)
 
     const = new_time_list[0]
@@ -66,6 +64,9 @@ def get_audio_peaks(path, frame_rate):
     cut_list[0]['cut_start'] = 0
     print(cut_list)
 
+    onset_times = librosa.frames_to_time(onset_frames)
+    draw_graph(x,sr,onset_times)
+
     return cut_list, output_path
 
 
@@ -81,3 +82,12 @@ def get_isolated_drums(path):
 
     for x in glob.glob(f'{SAMPLE_OUTPUTS}/**/drums.wav', recursive=True):
         return x
+
+
+def draw_graph(x,sr, onset_times):
+    start_sec = 1
+    end_sec = 45
+    librosa.display.waveplot(x[sr*start_sec:sr*end_sec], sr = sr)
+    for hit in onset_times:
+        plt.axvline(hit, color='r')
+    plt.savefig('wykres.pdf', dpi=200)

@@ -39,6 +39,7 @@ def init(video_paths, song_path, progress):
         usable_part = get_stable_footage(video_path)
         try:
             whole_movie = whole_movie[usable_part[0]:usable_part[-1]]
+            whole_movie = edit_tl.frame_info_overlay(whole_movie)
         except (IndexError, TypeError):
             print('Not usable')
             whole_movie = []
@@ -98,7 +99,9 @@ def init(video_paths, song_path, progress):
     concat_clip = concatenate_videoclips(clips, method="compose")
     concat_clip.write_videofile(os.path.join(BASE_DIR,"render.mp4"), audio=new_song_path, codec="libx264", fps=vc.get_fps())
     progress['value'] = 100
-    subprocess.run(f'explorer / select,"{os.path.join(BASE_DIR,"render.mp4")}"')
+    command = f'ffmpeg -i {os.path.join(BASE_DIR,"render.mp4")}  -filter_complex "afade=d=1.5, areverse, afade=d=2, areverse" {os.path.join(BASE_DIR,"output.mp4")}'
+    subprocess.run(command)
+    subprocess.run(f'explorer / select,"{os.path.join(BASE_DIR,"output.mp4")}"')
 
     
 
