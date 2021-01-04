@@ -17,12 +17,9 @@ from video_controller import Video_controller
 from get_audio_peaks import get_audio_peaks
 from editing_tool import Editing_tool
 
-model_path = os.path.join(BASE_DIR, 'model.pkl')
-# song_path = os.path.join(SAMPLE_INPUTS, 'skank.mp3')
-
 
 def init(video_paths, song_path, progress):
-    edit_tl = Editing_tool(r'D:\Programowanie\AI\shot_classifier\model.pkl')
+    edit_tl = Editing_tool(model_path)
     render_sequence = []
     vc = Video_controller(video_paths[0])
     all_subclips = {
@@ -32,17 +29,15 @@ def init(video_paths, song_path, progress):
         'full_shot': [],
         'close_up_shot': [],
         'detail': []}
-    # whole_movie = edit_tl.frame_info_overlay(vc.clip)
     cut_list, new_song_path = get_audio_peaks(song_path, 25)
     all_videos = len(video_paths)
 
     for j, video_path in enumerate(video_paths):
         vc = Video_controller(video_path)
-        whole_movie = []
+        whole_movie = [frame for frame in vc.clip.inter_frames()]
 
-        for i, frame in enumerate(vc.clip.iter_frames()):
-            whole_movie.append(frame)
-
+        # for i, frame in enumerate(vc.clip.iter_frames()):
+        #     whole_movie.append(frame)
         usable_part = get_stable_footage(video_path)
         try:
             whole_movie = whole_movie[usable_part[0]:usable_part[-1]]

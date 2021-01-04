@@ -2,8 +2,9 @@
 ## Things to do: 
 - [x] filter shaky and bad footage 
 - [x] Train model for frames type recognition 
-- [ ] Use FFT to find audio peaks and define tempo
-- [ ] Cut to the rythm of music
+- [x] Use FFT to find audio peaks and define tempo
+- [x] Cut to the rythm of music
+- [x] Test stable shot selection
 
 
 ## Room for improvement:

@@ -10,6 +10,7 @@ from scipy.io.wavfile import write
 import scipy.signal
 import scipy
 import librosa
+from scipy.io.wavfile import write
 import numpy as np
 import subprocess
 import glob
@@ -55,6 +56,8 @@ def get_audio_peaks(path, frame_rate):
 
     new_time_list = sorted(set(new_time_list))
     output_path = f'{SAMPLE_OUTPUTS}\\trimmed.mp3'
+    start_sec = new_time_list[0]/frame_rate
+    end_sec = new_time_list[-1]/frame_rate
     trim_audio = f'ffmpeg -i {path} -ss {new_time_list[0]/frame_rate} -to {new_time_list[-1]/frame_rate} -c copy {output_path}'
     subprocess.run(trim_audio)
 
@@ -75,7 +78,8 @@ def get_audio_peaks(path, frame_rate):
     print(cut_list)
 
     onset_times = librosa.frames_to_time(onset_frames)
-    draw_graph(x, sr, onset_times)
+    draw_graph(x, sr, onset_times, int(start_sec), int(end_sec))
+    save_to_clicks(onset_frames, x ,sr)
 
     return cut_list, output_path
 
@@ -95,10 +99,13 @@ def get_isolated_drums(path):
         return x
 
 
-def draw_graph(x, sr, onset_times):
-    start_sec = 1
-    end_sec = 45
+def draw_graph(x, sr, onset_times, start_sec, end_sec):
     librosa.display.waveplot(x[sr * start_sec:sr * end_sec], sr=sr)
     for hit in onset_times:
         plt.axvline(hit, color='r')
-    plt.savefig('wykres.pdf', dpi=200)
+    plt.savefig('cuts.pdf', dpi=200)
+
+def save_to_clicks(onset_frames,x, sr):
+    clicks = librosa.clicks(frames=onset_frames, sr=sr, length=len(x))
+    a_data =  result = np.hstack((x.reshape(-1, 1), clicks.reshape(-1,1)))
+    write('beat_track.mp3', rate=sr, data= a_data)
