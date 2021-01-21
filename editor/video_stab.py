@@ -9,8 +9,10 @@ import time
 
 def get_stable_footage(video_path):
     print('Searching for most stable part')
-
-    cap = cv2.VideoCapture(video_path)
+    try:
+        cap = cv2.VideoCapture(video_path)
+    except cv2.error as e:
+        print('Loaded file - incorrectly')
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -44,8 +46,12 @@ def get_stable_footage(video_path):
         curr_gray = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY)
 
         # Calculate optical flow (i.e. track feature points)
-        curr_pts, status, err = cv2.calcOpticalFlowPyrLK(
-            prev_gray, curr_gray, prev_pts, None)
+        try:
+            curr_pts, status, err = cv2.calcOpticalFlowPyrLK(
+                prev_gray, curr_gray, prev_pts, None)
+        except cv2.error as e:
+            print('OpenCV optical flow error')
+            return e
 
         # Sanity check
         assert prev_pts.shape == curr_pts.shape
@@ -54,11 +60,16 @@ def get_stable_footage(video_path):
         idx = np.where(status == 1)[0]
         prev_pts = prev_pts[idx]
         curr_pts = curr_pts[idx]
+        # print(curr_pts)
 
         # Find transformation matrix
     #   m = cv2.estimateRigidTransform(prev_pts, curr_pts, fullAffine=False)
         # will only work with OpenCV-3 or less
-        m, inliers = cv2.estimateAffinePartial2D(prev_pts, curr_pts)
+        try:
+            m, inliers = cv2.estimateAffinePartial2D(prev_pts, curr_pts)
+        except cv2.error as e:
+            print('OpenCV estimate AffinePartial2D error')
+            break
 
         # Extract traslation
         try:
@@ -91,7 +102,10 @@ def get_stable_footage(video_path):
         container = np.intersect1d(container_x, container_y)
         return (container[0], container[-1])
     except (IndexError, TypeError):
-        return (container_y[0][0], container_y[0][-1])
+        try:
+            return (container_y[0][0], container_y[0][-1])
+        except IndexError:
+            return IndexError
 
 
 def calc_dif(trajectory):

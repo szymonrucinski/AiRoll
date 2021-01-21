@@ -1,4 +1,4 @@
-from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT, BASE_DIR
+from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT, BASE_DIR, MODEL_PATH
 from moviepy.editor import *
 from PIL import Image
 from copy import deepcopy
@@ -9,8 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import librosa
 import time
+import concurrent.futures
 import numpy as np
 import subprocess
+import random
 import matplotlib.pyplot as plt
 from video_stab import get_stable_footage
 from video_controller import Video_controller
@@ -19,9 +21,9 @@ from editing_tool import Editing_tool
 
 
 def init(video_paths, song_path, progress):
-    edit_tl = Editing_tool(model_path)
+    edit_tl = Editing_tool(MODEL_PATH)
+    frame_rate = 25
     render_sequence = []
-    vc = Video_controller(video_paths[0])
     all_subclips = {
         'extreme_wide_shot': [],
         'longShot': [],
@@ -29,24 +31,32 @@ def init(video_paths, song_path, progress):
         'full_shot': [],
         'close_up_shot': [],
         'detail': []}
-    cut_list, new_song_path = get_audio_peaks(song_path, 25)
+    # cut_list, new_song_path = get_audio_peaks(song_path, frame_rate)
+    # pool = ThreadPool(processes=2)
+    # async_result = pool.apply_async(get_audio_peaks, (song_path, frame_rate))
+    # cut_list, song_path = async_result.get()
+    cut_list, song_path = get_audio_peaks(song_path, frame_rate)
     all_videos = len(video_paths)
-
+ 
     for j, video_path in enumerate(video_paths):
-        vc = Video_controller(video_path)
-        whole_movie = [frame for frame in vc.clip.inter_frames()]
+        # handle corrupted video files
+        try:
+            vc = Video_controller(video_path)
+        except: 
+            KeyError
+            continue
 
-        # for i, frame in enumerate(vc.clip.iter_frames()):
-        #     whole_movie.append(frame)
+        n_frames = vc.clip.reader.nframes
+        whole_movie = [frame for frame in vc.clip.iter_frames()]
         usable_part = get_stable_footage(video_path)
         try:
             whole_movie = whole_movie[usable_part[0]:usable_part[-1]]
             whole_movie = edit_tl.frame_info_overlay(whole_movie)
-        except (IndexError, TypeError):
+        except (IndexError, TypeError, cv2.error):
             print('Not usable')
             whole_movie = []
             continue
-        if len(whole_movie) < 50:
+        if len(whole_movie) < 2*frame_rate:
             continue
         # edit_tl.detect_blur(whole_movie, round(vc.get_fps()*2))
 
@@ -60,6 +70,9 @@ def init(video_paths, song_path, progress):
     for i in all_subclips_copy:
         if len(all_subclips[i]) == 0:
             del all_subclips[i]
+        else: random.shuffle(all_subclips[i])
+        #shuffle videos in shot_type
+        
     del all_subclips_copy
     counter = 0
     done = False
@@ -84,8 +97,6 @@ def init(video_paths, song_path, progress):
             for j, scene in enumerate(cur_shot):
                 if len(scene) >= number_of_frames:
                     chunk = cur_shot.pop(j)
-                    print(np.shape(chunk), 'chunk')
-                    print(np.shape(cur_shot), 'cur_shot')
                     render_sequence = render_sequence + \
                         chunk[0:number_of_frames + 1]
                     counter = len(chunk) + counter
@@ -111,7 +122,7 @@ def init(video_paths, song_path, progress):
         codec="libx264",
         fps=vc.get_fps())
     progress['value'] = 100
-    command = f'ffmpeg -i {os.path.join(BASE_DIR,"render.mp4")}  -filter_complex "afade=d=1.5, areverse, afade=d=2, areverse" {os.path.join(BASE_DIR,"output.mp4")}'
+    command = f'ffmpeg -i {os.path.join(BASE_DIR,"render.mp4")}  -filter_complex "afade=d=2, areverse, afade=d=2, areverse" {os.path.join(BASE_DIR,"output.mp4")}'
     subprocess.run(command)
     subprocess.run(
         f'explorer / select,"{os.path.join(BASE_DIR,"output.mp4")}"')

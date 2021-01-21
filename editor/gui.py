@@ -125,6 +125,12 @@ style.configure(
 bar = Progressbar(window, length=200, style='grey.Horizontal.TProgressbar')
 bar['value'] = 0
 
+# c1 = Checkbutton(text = "Proxy Mode", onvalue = 1, offvalue = 0, height=1, width = 20)
+# c1.config(activebackground='#871719')
+
+# c2 = Checkbutton(text = "RAM Mode", onvalue = 1, offvalue = 0, height=1, width = 20)
+# c2.config(activebackground='#871719')
+
 claps_label.grid(column=0, row=1)
 popcorn_label.grid(column=1, row=1)
 ticket_label.grid(column=2, row=1)
@@ -133,6 +139,9 @@ button_load_movies.grid(column=0, row=2)
 button_select_audio.grid(column=1, row=2)
 button_action.grid(column=2, row=2)
 bar.grid(column=1, row=3)
+# c1.grid(column=0, row = 4)
+# c2.grid(column=1, row = 4)
+
 
 
 # Let the window wait for any events
