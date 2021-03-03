@@ -1,0 +1,6 @@
+close_up_shot
+detail
+extreme_wide_shot
+full_shot
+long_shot
+medium_shot

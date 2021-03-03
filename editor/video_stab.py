@@ -117,7 +117,7 @@ def calc_dif(trajectory):
         if i > 0:
             dif_x.append(round(el - graph[i - 1]))
     for i, el in enumerate(dif_x):
-        if el <= 1 and el >= -1:
+        if el <= 2 and el >= -2:
             dif_x[i] = 0
         else:
             dif_x[i] = 100

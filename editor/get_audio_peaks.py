@@ -14,6 +14,7 @@ from scipy.io.wavfile import write
 import numpy as np
 import subprocess
 import glob
+import madmom
 from sys import platform
 import shutil
 import os
@@ -26,43 +27,63 @@ MAX_CUT_LEN = 4
 
 
 def get_audio_peaks(path, frame_rate):
-    x, sr = librosa.load(get_isolated_drums(path))
+    x, sr = librosa.load(path)
+
+    #CORRECT
+    # x, sr = librosa.load(get_isolated_drums(path))
     # onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=1, post_avg=1, pre_max=1, post_max=1)
-    onset_frames = librosa.onset.onset_detect(
-        x,
-        sr=sr,
-        wait=1,
-        pre_avg=30,
-        post_avg=1,
-        pre_max=30,
-        post_max=1,
-        backtrack=True)
+    # onset_frames = librosa.onset.onset_detect(
+    #     x,
+    #     sr=sr,
+    #     wait=1,
+    #     pre_avg=30,
+    #     post_avg=1,
+    #     pre_max=30,
+    #     post_max=1,
+    #     backtrack=True)
+    #CORRECT
+    onset_frames = librosa.onset.onset_detect(x, sr=sr, wait=1, pre_avg=1, post_avg=1, pre_max=1, post_max=1)
+
 
     print(onset_frames)
+
+
+    proc = madmom.features.beats.DBNBeatTrackingProcessor(fps=100)
+    act = madmom.features.beats.RNNBeatProcessor()(path)
+    beat_times = proc(act)
+
+
+
     onset_times = librosa.frames_to_time(onset_frames)
     onset_times = onset_times * frame_rate
     onset_times = onset_times.astype(int)
-    new_time_list = []
+    # new_time_list = []
 
-    for i, value in enumerate(onset_times):
-        for j, checked in enumerate(onset_times):
-            if checked - value >= frame_rate and len(new_time_list) == 0:
-                new_time_list.append(checked)
-                break
-            if len(new_time_list) > 0 and checked - \
-                    new_time_list[-1] >= frame_rate:
-                new_time_list.append(checked)
-                break
+    #frameRATE or 2 * frame_rate
+    # for i, value in enumerate(onset_times):
+    #     for j, checked in enumerate(onset_times):
+    #         if checked - value >= 2 * frame_rate and len(new_time_list) == 0:
+    #             new_time_list.append(checked)
+    #             break
+    #         if len(new_time_list) > 0 and checked - \
+    #                 new_time_list[-1] >= 2* frame_rate:
+    #             new_time_list.append(checked)
+    #             break
 
-    new_time_list = sorted(set(new_time_list))
+    new_time_list = np.round(beat_times*frame_rate)
+    new_time_list = np.asarray(new_time_list)
+    new_time_list = new_time_list.astype(int)[::4]
+
+
+    # new_time_list = sorted(set(new_time_list))
     output_path = f'{SAMPLE_OUTPUTS}\\trimmed.mp3'
     start_sec = new_time_list[0]/frame_rate
     end_sec = new_time_list[-1]/frame_rate
-    trim_audio = f'ffmpeg -i {path} -ss {new_time_list[0]/frame_rate} -to {new_time_list[-1]/frame_rate} -c copy {output_path}'
+    trim_audio = f'ffmpeg -y -i {path} -ss {new_time_list[0]/frame_rate} -to {new_time_list[-1]/frame_rate} -c copy {output_path}'
     subprocess.run(trim_audio)
 
     const = new_time_list[0]
-    new_time_list = np.asarray(new_time_list)
+    # new_time_list = np.asarray(new_time_list)
     new_time_list = new_time_list - const
     cut_list = []
     for counter, index in enumerate(new_time_list):

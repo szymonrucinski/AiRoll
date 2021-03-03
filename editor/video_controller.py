@@ -1,4 +1,5 @@
-from moviepy.editor import *
+from moviepy.video.VideoClip import Clip
+from moviepy.video.io.VideoFileClip import VideoFileClip
 import sys
 
 

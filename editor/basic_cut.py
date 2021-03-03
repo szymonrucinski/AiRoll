@@ -1,24 +1,23 @@
 from conf import SAMPLE_INPUTS, SAMPLE_OUTPUTS, AUDIO_DEPT, BASE_DIR, MODEL_PATH
-from moviepy.editor import *
-from PIL import Image
+from moviepy.video.compositing.concatenate import concatenate_videoclips
+from moviepy.video.VideoClip import ImageClip
 from copy import deepcopy
-from fastai.vision.all import *
 import cv2
 import librosa
 import numpy as np
-import matplotlib.pyplot as plt
 import librosa
-import time
-import concurrent.futures
 import numpy as np
 import subprocess
-import random
+# import random
 import matplotlib.pyplot as plt
 from video_stab import get_stable_footage
 from video_controller import Video_controller
 from get_audio_peaks import get_audio_peaks
 from editing_tool import Editing_tool
-
+def script_method(fn, _rcb=None):
+    return fn
+def script(obj, optimize=True, _frames_up=0, _rcb=None):
+    return obj    
 
 def init(video_paths, song_path, progress):
     edit_tl = Editing_tool(MODEL_PATH)
@@ -31,10 +30,7 @@ def init(video_paths, song_path, progress):
         'full_shot': [],
         'close_up_shot': [],
         'detail': []}
-    # cut_list, new_song_path = get_audio_peaks(song_path, frame_rate)
-    # pool = ThreadPool(processes=2)
-    # async_result = pool.apply_async(get_audio_peaks, (song_path, frame_rate))
-    # cut_list, song_path = async_result.get()
+  
     cut_list, song_path = get_audio_peaks(song_path, frame_rate)
     all_videos = len(video_paths)
  
@@ -51,7 +47,7 @@ def init(video_paths, song_path, progress):
         usable_part = get_stable_footage(video_path)
         try:
             whole_movie = whole_movie[usable_part[0]:usable_part[-1]]
-            whole_movie = edit_tl.frame_info_overlay(whole_movie)
+            # whole_movie = edit_tl.frame_info_overlay(whole_movie)
         except (IndexError, TypeError, cv2.error):
             print('Not usable')
             whole_movie = []
@@ -62,15 +58,14 @@ def init(video_paths, song_path, progress):
 
         print('added {}'.format(video_path))
         print(f'{len(whole_movie)}')
-        all_subclips[edit_tl.learn.predict(
-            whole_movie[-1])[0]].append(whole_movie)
+        all_subclips[edit_tl.predict_frame(whole_movie[-1])].append(whole_movie)
         progress['value'] = (j / all_videos) * 100
 
     all_subclips_copy = deepcopy(all_subclips)
     for i in all_subclips_copy:
         if len(all_subclips[i]) == 0:
             del all_subclips[i]
-        else: random.shuffle(all_subclips[i])
+        # else: random.shuffle(all_subclips[i])
         #shuffle videos in shot_type
         
     del all_subclips_copy
@@ -108,7 +103,8 @@ def init(video_paths, song_path, progress):
     old_song_path = f'{SAMPLE_OUTPUTS}\\trimmed.mp3'
     new_song_path = f'{SAMPLE_OUTPUTS}\\final.mp3'
 
-    trim_audio = f'ffmpeg -i {old_song_path} -ss {0} -to {len(render_sequence)/25} -c copy {new_song_path}'
+    print(len(render_sequence)/25)
+    trim_audio = f'ffmpeg -y -i {old_song_path} -ss {0} -to {len(render_sequence)/frame_rate} -c copy {new_song_path}'
     subprocess.run(trim_audio)
 
     clips = [ImageClip(frame).set_duration(1 / vc.get_fps())
@@ -122,7 +118,9 @@ def init(video_paths, song_path, progress):
         codec="libx264",
         fps=vc.get_fps())
     progress['value'] = 100
-    command = f'ffmpeg -i {os.path.join(BASE_DIR,"render.mp4")}  -filter_complex "afade=d=2, areverse, afade=d=2, areverse" {os.path.join(BASE_DIR,"output.mp4")}'
+    command = f'ffmpeg -y -i {os.path.join(BASE_DIR,"render.mp4")}  -filter_complex "afade=d=2, areverse, afade=d=2, areverse" {os.path.join(BASE_DIR,"output.mp4")}'
     subprocess.run(command)
     subprocess.run(
         f'explorer / select,"{os.path.join(BASE_DIR,"output.mp4")}"')
+    progress['value'] = 0
+

@@ -1,18 +1,59 @@
-from moviepy.editor import *
 import sys
 import numpy as np
 import PIL
-import moviepy
 from collections import Counter
-from fastai.vision.all import *
 from PIL import ImageFont
 from PIL import ImageDraw
+from PIL import Image
+
 import cv2
+import onnxruntime as nxrun
+import numpy as np
+from skimage.transform import resize
+from skimage import io
 
 
 class Editing_tool:
     def __init__(self, model_path):
-        self.learn = load_learner(model_path)
+        pth = model_path
+
+    def predict_frame(self,frame):
+        classes = ['close_up_shot','detail','extreme_wide_shot','full_shot','long_shot','medium_shot']
+        # n_img = Image.fromarray(frame, 'RGB')
+        res = cv2.resize(frame, dsize=(640, 360), interpolation=cv2.INTER_CUBIC)
+        res = res.astype(np.float32)
+
+
+
+
+
+        
+
+        # print("The model expects input shape: ", self.sess.get_inputs()[0].shape)
+        # print("The shape of the Image is: ", res.shape)
+        # input_name = self.sess.get_inputs()[0].name
+        # label_name = self.sess.get_outputs()[0].name
+        # result = self.sess.run(None, {input_name: res})
+        # prob = result[0]
+        # final = prob.ravel()[:10]
+        img224 = resize(res / 255, (3, 640, 360), anti_aliasing=True)
+        ximg = img224[np.newaxis, :, :, :]
+        ximg = ximg.astype(np.float32)
+
+        sess = nxrun.InferenceSession('D:\\Programowanie\\AI\\editor\\shot_classifier.onnx')
+
+
+        print("The model expects input shape: ",sess.get_inputs()[0].shape)
+        print("The shape of the Image is: ", ximg.shape)
+        input_name = sess.get_inputs()[0].name
+        label_name = sess.get_outputs()[0].name
+        result = sess.run(None, {input_name: ximg})
+        prob = result[0]
+        final = prob.ravel()[:10]
+        print(classes[np.argmax(final)])
+
+        return classes[np.argmax(final)]
+
 
     def frame_info_overlay(self, clip):
         start = []
@@ -21,7 +62,7 @@ class Editing_tool:
         evaluate_shot = clip[::30]
         verdict = []
         for frame in evaluate_shot:
-            verdict.append(str(self.learn.predict(frame)[0]))
+            verdict.append(self.predict_frame(frame))
 
         counter = Counter(verdict)
         verdict = counter.most_common(1)
