@@ -1,2 +1,3 @@
 editor/assets/* filter=lfs diff=lfs merge=lfs -text
 editor/assets/*.png filter=lfs diff=lfs merge=lfs -text
+presentation/obrona_inz_prezentacja.tar.gz filter=lfs diff=lfs merge=lfs -text
