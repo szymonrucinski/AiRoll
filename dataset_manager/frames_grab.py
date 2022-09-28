@@ -6,13 +6,16 @@ import requests
 from PIL import Image
 from selenium import webdriver
 from conf import IMAGES_LIMIT, BASE_DIR, DATASET_DIR
-from firebaseOperations import writing_to_db, movie_already_in_db, get_names_of_all_collection_in_db
+from firebase_operations import writing_to_db, movie_already_in_db, get_names_of_all_collection_in_db
 
 
-OPTIONS = webdriver.ChromeOptions()
-OPTIONS.add_experimental_option("excludeSwitches", ["enable-logging"])
-BROWSER = webdriver.Chrome(
-    options=OPTIONS, executable_path=r'C:\chromedriver\chromedriver.exe')
+OPTIONS = webdriver.FirefoxOptions()
+# OPTIONS.add_experimental_option("excludeSwitches", ["enable-logging"])
+# BROWSER = webdriver.Chrome(
+#     options=OPTIONS, 
+#     executable_path=r'C:\chromedriver\chromedriver.exe')
+
+BROWSER = webdriver.Firefox(options=OPTIONS)
 ALL_ROOT_LINKS = []
 ALL_PHOTOS = []
 MAX_NUMBER_OF_FRAMES = 25
@@ -21,7 +24,6 @@ def clear_cli():
 
     if os.name == 'nt':
         _ = os.system('cls')
-
     else:
         _ = os.system('clear')
 
