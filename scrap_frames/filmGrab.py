@@ -90,7 +90,7 @@ def download_completed():
     sys.exit()
 
 
-def main():
+def start_scrapping():
     main_page = 'https://film-grab.com/movies-a-z/'
     BROWSER.get(main_page)
 
@@ -110,5 +110,3 @@ def main():
         go_to_movie_page(movie_link)
         time.sleep(15)
 
-
-main()

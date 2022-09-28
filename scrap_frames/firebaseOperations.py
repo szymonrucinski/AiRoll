@@ -2,11 +2,18 @@ import os
 import firebase_admin
 import operator
 import time
-from fastai.vision.all import *
+from urllib.request import urlretrieve
+from get_project_root import root_path
+# from fastai.vision.all import *
 from firebase_admin import credentials
 from firebase_admin import firestore
 import requests
+from pathlib import Path
 import matplotlib.pyplot as plt
+from typing import Optional
+import typer
+
+app = typer.Typer()
 
 
 BASE_DIR = os.path.join(os.path.dirname(__file__))
@@ -143,10 +150,11 @@ def download_photos():
         return False
     
     for frame in frames.items():
-        file_path = os.path.join('D:\\Programowanie\\AI\\shot_classifier\\PlanDoskonaly', f'{frame[1][0]}')
+        file_path = os.path.join(Path(__file__).parent.parent,'data','images',f'{frame[1][0]}')
+        print(file_path)
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_path = os.path.join(file_path,frame[0])
-        download_url(frame[1][1],file_path)
+        urlretrieve(frame[1][1],file_path)
     print("Done")
     return True

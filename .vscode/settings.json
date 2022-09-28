@@ -11,6 +11,6 @@
         "--max-line-length",
         "120",
     ],
-    "python.languageServer": "Microsoft",
+    "python.languageServer": "Default",
     "python.linting.pylintEnabled": true
 }
