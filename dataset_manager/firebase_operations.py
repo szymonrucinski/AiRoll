@@ -1,20 +1,13 @@
 import os
 import firebase_admin
-import operator
-import time
 from urllib.request import urlretrieve
 from get_project_root import root_path
 # from fastai.vision.all import *
 from firebase_admin import credentials
 from firebase_admin import firestore
-import requests
 from pathlib import Path
 import matplotlib.pyplot as plt
 from typing import Optional
-import typer
-
-app = typer.Typer()
-
 
 BASE_DIR = os.path.join(os.path.dirname(__file__))
 KEY_NAME = os.path.basename("key.json")
