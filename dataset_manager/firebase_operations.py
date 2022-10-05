@@ -143,7 +143,7 @@ def download_photos():
         return False
     
     for frame in frames.items():
-        file_path = os.path.join(Path(__file__).parent.parent,'data','images',f'{frame[1][0]}')
+        file_path = os.path.join(Path(__file__).parent.parent,'data','train',f'{frame[1][0]}')
         print(file_path)
         if not os.path.exists(file_path):
             os.makedirs(file_path)

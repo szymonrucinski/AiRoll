@@ -1,19 +1,18 @@
 # %%
 from keras_preprocessing.image import ImageDataGenerator
 import tensorflow as tf
+import time
 import tensorflow_hub as hub
 import matplotlib.pylab as plt
 import numpy as np
 import tensorflow_datasets as tfds
+from pathlib import Path
+import os
 
-beans_dataset, beans_info = tfds.load(
-    name="beans",
-    with_info=True,
-    as_supervised=True,
-    split=["train", "test", "validation"],
-)
-
-builder = tfds.ImageFolder("/Users/szymon/Desktop/AiRoll/data/")
+data_folder = Path(__file__).resolve().parent.parent.parent
+print(data_folder)
+time.sleep(40)
+builder = tfds.ImageFolder("/Users/szymon.rucinski/Desktop/AiRoll/data/")
 
 # %%
 ds = builder.as_dataset(split="train", shuffle_files=True)

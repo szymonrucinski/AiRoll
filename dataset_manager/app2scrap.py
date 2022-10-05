@@ -1,5 +1,5 @@
 from firebase_operations import download_photos
-from frames_grab import start_scrapping
+# from frames_grab import start_scrapping
 from typing import Optional
 import typer
 
