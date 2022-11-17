@@ -137,10 +137,14 @@ model_fit = neural_net.fit(
 
 # %%
 for _ in range(len(validation_generator.labels) - 1):
+    print("1")
     img, label = validation_generator.next()
+    print("2")
     plt.imshow(img[0])
+    print("3")
     pred = neural_net.predict(img)
     pred = np.argmax(pred)
+    print("4")
     print(pred)
     pred = list(validation_generator.class_indices.keys())[pred]
     print(pred)
