@@ -1,4 +1,3 @@
-# %%
 from keras_preprocessing.image import ImageDataGenerator
 import tensorflow as tf
 import time
@@ -7,12 +6,15 @@ import matplotlib.pylab as plt
 import numpy as np
 import tensorflow_datasets as tfds
 from pathlib import Path
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications.vgg16 import preprocess_input
 import os
+import wandb
+
+wandb.init(project="airoll")
 
 data_folder = Path(__file__).resolve().parent.parent.parent
 # train_folder = Path(data_folder, "data")
-train_folder = '/Users/szymon.rucinski/Desktop/AiRoll/data/train'
+train_folder = "/Users/szymon/Documents/AiRoll/data/train"
 print(train_folder)
 
 print(data_folder)
@@ -76,16 +78,16 @@ train_generator.class_indices
 
 
 # pretrained_model = "https://tfhub.dev/google/imagenet/resnet_v2_50/classification/5"
-base_model = tf.keras.applications.resnet50.ResNet50(
-    include_top=False,
-    weights="imagenet",
-    input_shape=(224, 224, 3))
+base_model = tf.keras.applications.vgg16.VGG16(
+    include_top=False, weights="imagenet", input_shape=(224, 224, 3)
+)
 
 
 base_model.trainable = False
 
-inputs = tf.keras.Input(shape=(224,224,3))
-x = base_model(inputs, training=False)
+inputs = tf.keras.Input(shape=(224, 224, 3))
+preprocessed_inputs = preprocess_input(inputs)
+x = base_model(preprocessed_inputs, training=False)
 x = tf.keras.layers.GlobalAveragePooling2D()(x)
 outputs = tf.keras.layers.Dense(7, activation="softmax")(x)
 
@@ -102,7 +104,6 @@ neural_net.summary()
 #         tf.keras.layers.Dense(7, activation="softmax"),
 #     ]
 # )
-
 
 
 # %%
@@ -124,14 +125,16 @@ neural_net.compile(
 )
 
 # %%
-model_fit = neural_net.fit(
+# ...
+neural_net.fit(
     train_generator,
     epochs=epochs,
     validation_data=validation_generator,
     callbacks=[
         tf.keras.callbacks.EarlyStopping(
-            patience=10, monitor="val_prec", restore_best_weights=True
-        )
+            patience=10, monitor="val_precision", restore_best_weights=True
+        ),
+        wandb.keras.WandbCallback(),
     ],
 )
 
