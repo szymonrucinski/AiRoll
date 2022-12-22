@@ -20,13 +20,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipenv
-          pipenv install --dev
-          pipenv run pip install -e .
+          pipenv install -r requirements.txt
       - name: Check linting and formatting
         run: |
-          pipenv run black --check .
-          pipenv run pylint src examples --disable=too-many-arguments,too-many-locals
-          ! pipenv run mypy . --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports | grep "Function is missing" || false
-      - name: Init tests
-        run: |
-          pipenv run pytest ./test/test_training.py
+          pipenv run python dataset_manager/app2scrap.py
