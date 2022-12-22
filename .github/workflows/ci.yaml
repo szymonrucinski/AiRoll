@@ -1,20 +1,32 @@
-name: Lint
-on: [push, pull_request]
+name: CI
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
 jobs:
-  lint:
-    name: Lint
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Set up Python 3.10
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
       - uses: actions/checkout@v3
-
-      - name: Install dependencies
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+      - name: Create venv and install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipenv
-          pipenv install
-          pipenv run ./dataset_manager/app2scrap.py
+          pipenv install --dev
+          pipenv run pip install -e .
+      - name: Check linting and formatting
+        run: |
+          pipenv run black --check .
+          pipenv run pylint src examples --disable=too-many-arguments,too-many-locals
+          ! pipenv run mypy . --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports | grep "Function is missing" || false
+      - name: Init tests
+        run: |
+          pipenv run pytest ./test/test_training.py
