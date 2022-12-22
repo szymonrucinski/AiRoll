@@ -1,15 +1,12 @@
 name: CI
-
 on:
   push:
     branches: [main, add-ci]
   pull_request:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Set up Python 3.10
       - uses: actions/setup-python@v4
