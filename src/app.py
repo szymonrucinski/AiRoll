@@ -5,7 +5,7 @@ import os
 def run(directory_path, song_path, progress):
     files = os.listdir(directory_path)
     video_paths = []
-    #sort files in folder
+    # sort files in folder
     video_paths.sort()
     print(files)
     for file_path in files:
