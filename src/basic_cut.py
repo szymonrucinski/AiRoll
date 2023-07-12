@@ -66,7 +66,7 @@ def init(video_paths, song_path, progress):
         print("added {}".format(video_path))
         print(f"{len(whole_movie)}")
         all_subclips[edit_tl.predict_frame(whole_movie[-1])].append(whole_movie)
-        progress["value"] = (j / all_videos) * 100
+        # progress["value"] = (j / all_videos) * 100
 
     all_subclips_copy = deepcopy(all_subclips)
     for i in all_subclips_copy:
