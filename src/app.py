@@ -2,7 +2,7 @@ from basic_cut import init
 import os
 
 
-def run(directory_path, song_path, progress):
+def run(directory_path, song_path):
     files = os.listdir(directory_path)
     video_paths = []
     # sort files in folder
@@ -15,4 +15,4 @@ def run(directory_path, song_path, progress):
         video_paths.append(os.path.join(directory_path, file_path))
 
     # song_path = str(song_path).replace(" ", "\\ ")
-    init(video_paths, song_path, progress)
+    init(video_paths, song_path)
