@@ -1,16 +1,15 @@
 {
-    "python.pythonPath": "C:\\Users\\Szymon\\anaconda3\\envs\\shot-classifier\\python.exe",
-    "python.formatting.provider": "black",
-    "python.formatting.autopep8Path": "${workspaceFolder}/virtualEnv/Scripts/autopep8",
-    "editor.formatOnSave": true,
-    "pythonTestExplorer.testFramework": "pytest",
-    "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.formatting.autopep8Args": [
-        "--in-place",
-        "--max-line-length",
-        "120",
-    ],
-    "python.languageServer": "Default",
-    "python.linting.pylintEnabled": true
+  "python.pythonPath": "C:\\Users\\Szymon\\anaconda3\\envs\\shot-classifier\\python.exe",
+  "python.formatting.provider": "none",
+  "python.formatting.autopep8Path": "${workspaceFolder}/virtualEnv/Scripts/autopep8",
+  "editor.formatOnSave": true,
+  "pythonTestExplorer.testFramework": "pytest",
+  "python.linting.enabled": false,
+  "python.linting.lintOnSave": true,
+  "python.formatting.autopep8Args": ["--in-place", "--max-line-length", "120"],
+  "python.languageServer": "Default",
+  "python.linting.pylintEnabled": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }
