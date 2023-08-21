@@ -1,5 +1,6 @@
 name: airoll
 channels:
+  - pytorch
   - conda-forge
 dependencies:
   - aiohttp=3.8.5
@@ -34,6 +35,7 @@ dependencies:
   - colorama=0.4.6
   - coloredlogs=15.0.1
   - comm=0.1.4
+  - cpuonly=2.0
   - dataclasses=0.8
   - datasets=2.14.4
   - debugpy=1.6.8
@@ -136,6 +138,7 @@ dependencies:
   - python-xxhash=3.3.0
   - python_abi=3.9
   - pytorch=2.0.0
+  - pytorch-mutex=1.0
   - pytz=2023.3
   - pyyaml=6.0
   - pyzmq=25.1.1
@@ -154,6 +157,7 @@ dependencies:
   - sympy=1.12
   - tk=8.6.12
   - tokenizers=0.13.3
+  - torchaudio=2.0.0
   - torchvision=0.14.1
   - tornado=6.3.3
   - tqdm=4.66.1
