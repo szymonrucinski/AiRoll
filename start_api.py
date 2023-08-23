@@ -7,6 +7,7 @@ import torch
 import torchvision.transforms as transforms
 from datasets import load_dataset
 from PIL import Image
+import logging
 from torchvision import transforms
 from torch import nn
 from torchsummary import summary
@@ -21,6 +22,7 @@ import glob
 import gradio as gr
 
 # Load
+logging.info("Loading model")
 PATH = "./model/shot_clf.pt"
 LABELS = dataset["train"].features["label"].names
 DEVICE = torch.device("cpu")
@@ -29,9 +31,9 @@ num_features = MODEL.fc.in_features
 MODEL.fc = nn.Linear(num_features, len(LABELS))
 image = gr.inputs.Image(shape=(224, 224))
 label = gr.outputs.Label(num_top_classes=len(LABELS))
+logging.info("Model loaded")
 
 
-# print(summary(MODEL, (3, 224, 224)))
 def predict(image) -> dict[str, float]:
     transform = transforms.Compose(
         [
