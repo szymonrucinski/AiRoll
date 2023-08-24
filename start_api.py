@@ -68,5 +68,6 @@ demo = gr.Interface(
 )
 demo.launch(
     debug=True,
+    ssl_verify=False,
     server_port=7860,
 )
