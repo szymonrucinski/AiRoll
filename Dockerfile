@@ -6,7 +6,6 @@ WORKDIR /AiRoll
 RUN git clone https://huggingface.co/szymonrucinski/what-a-shot
 RUN ls
 RUN mv ./what-a-shot ./model
-RUN conda env create -f environment.yaml --quiet;
 RUN pip install -r requirements.txt
 RUN mkdir -m 777 flagged
 EXPOSE 7860
