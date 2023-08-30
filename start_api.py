@@ -66,4 +66,8 @@ demo = gr.Interface(
     examples=glob.glob("./examples/*"),
     interpretation="default",
 )
-demo.launch(debug=True)
+demo.launch(
+    debug=True,
+    ssl_verify=False,
+    server_port=7860,
+)
