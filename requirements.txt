@@ -13,7 +13,6 @@ pure_eval==0.2.2
 pyarrow==12.0.1
 pygments==2.16.1
 pysocks==1.7.1
-python==3.9.13
 pytorch==2.0.0
 tokenizers==0.13.3
 torchvision==0.14.1
