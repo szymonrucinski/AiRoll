@@ -66,8 +66,6 @@ demo = gr.Interface(
     examples=glob.glob("./examples/*"),
     interpretation="default",
 )
-demo.launch(
-    debug=True,
-    ssl_verify=False,
-    server_port=7860,
-)
+demo.queue(concurrency_count=1)
+demo.launch(enable_queue=True, share=False,
+           server_name="0.0.0.0", server_port=7860)
