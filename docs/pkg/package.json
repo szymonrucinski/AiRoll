@@ -1,0 +1,15 @@
+{
+  "name": "shot-classifier",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "shot_classifier_bg.wasm",
+    "shot_classifier.js",
+    "shot_classifier.d.ts"
+  ],
+  "main": "shot_classifier.js",
+  "types": "shot_classifier.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

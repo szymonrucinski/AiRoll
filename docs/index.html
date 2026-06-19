@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a Shot — film shot classifier in your browser</title>
+<style>
+  :root { --bg:#14110e; --card:#1e1a16; --line:#352e26; --ink:#f3ece1; --dim:#9a8f80; --accent:#e0a458; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:16px/1.5 ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:48px 20px 80px; }
+  h1 { font-size:30px; margin:0 0 6px; letter-spacing:-.02em; }
+  .sub { color:var(--dim); margin:0 0 4px; }
+  .tech { color:var(--accent); font-size:13px; letter-spacing:.03em; margin-bottom:28px; }
+  #drop { border:1.5px dashed var(--line); border-radius:16px; padding:44px 20px; text-align:center;
+          color:var(--dim); cursor:pointer; transition:.15s; background:var(--card); }
+  #drop.hot { border-color:var(--accent); color:var(--ink); }
+  #drop input { display:none; }
+  .stage { display:none; gap:22px; margin-top:26px; }
+  .stage.on { display:flex; flex-wrap:wrap; }
+  canvas { width:224px; height:224px; border-radius:12px; border:1px solid var(--line); background:#000; }
+  .out { flex:1; min-width:260px; }
+  .row { display:flex; align-items:center; gap:10px; margin:7px 0; }
+  .row .name { width:128px; font-size:13px; color:var(--dim); text-align:right; }
+  .row.top .name { color:var(--ink); font-weight:600; }
+  .bar { flex:1; height:14px; background:#000; border-radius:7px; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:var(--accent); width:0; transition:width .4s; }
+  .row .pct { width:48px; font-variant-numeric:tabular-nums; font-size:13px; }
+  #status { color:var(--dim); font-size:13px; margin-top:18px; min-height:18px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>What a Shot</h1>
+  <p class="sub">Drop a movie still — a DINOv2 model names the shot type. Nothing leaves your machine.</p>
+  <p class="tech">Rust · tract · ONNX · WebAssembly — inference runs 100% in-browser</p>
+
+  <label id="drop">
+    <input type="file" accept="image/*" id="file">
+    <strong>Drop an image here</strong> or click to choose
+  </label>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" width="224" height="224"></canvas>
+    <div class="out" id="bars"></div>
+  </div>
+  <div id="status">loading model…</div>
+</div>
+
+<script type="module">
+import init, { init_model, classify } from "./pkg/shot_classifier.js";
+
+// model hosted on HF (not committed to the repo) — fetched + cached by the browser
+const MODEL_URL = "https://huggingface.co/szymonrucinski/what-a-shot/resolve/main/dinov2_shot_tract.onnx";
+const statusEl = document.getElementById("status");
+const stage = document.getElementById("stage");
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d", { willReadFrequently: true });
+const bars = document.getElementById("bars");
+
+let ready = false;
+
+(async () => {
+  await init();                                   // boot the wasm module
+  statusEl.textContent = "downloading model (~87 MB, first load only)…";
+  const buf = await (await fetch(MODEL_URL)).arrayBuffer();
+  init_model(new Uint8Array(buf));                // parse + optimise once
+  ready = true;
+  statusEl.textContent = "model ready — drop an image.";
+})().catch(e => statusEl.textContent = "error: " + e);
+
+// resize shortest edge -> 256, centre-crop 224 (matches the model's BitImageProcessor)
+function preprocess(img) {
+  const s = 256 / Math.min(img.width, img.height);
+  const sw = 224 / s, sh = 224 / s;               // source crop box in original pixels
+  const sx = (img.width  - sw) / 2, sy = (img.height - sh) / 2;
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 224, 224);
+  return new Uint8Array(ctx.getImageData(0, 0, 224, 224).data.buffer);
+}
+
+function render(results) {
+  bars.innerHTML = "";
+  results.forEach((r, i) => {
+    const row = document.createElement("div");
+    row.className = "row" + (i === 0 ? " top" : "");
+    row.innerHTML = `<span class="name">${r.label}</span>
+      <span class="bar"><i></i></span><span class="pct">${(r.prob*100).toFixed(1)}%</span>`;
+    bars.appendChild(row);
+    requestAnimationFrame(() => row.querySelector("i").style.width = (r.prob*100) + "%");
+  });
+}
+
+function handleFile(file) {
+  if (!ready) { statusEl.textContent = "model still loading…"; return; }
+  if (!file || !file.type.startsWith("image/")) return;
+  const img = new Image();
+  img.onload = () => {
+    const rgba = preprocess(img);
+    const t0 = performance.now();
+    const results = JSON.parse(classify(rgba));
+    stage.classList.add("on");
+    render(results);
+    statusEl.textContent = `it's a ${results[0].label} · ${(performance.now()-t0).toFixed(0)} ms on-device`;
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+const drop = document.getElementById("drop");
+document.getElementById("file").addEventListener("change", e => handleFile(e.target.files[0]));
+["dragover","dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("hot"); }));
+drop.addEventListener("drop", e => handleFile(e.dataTransfer.files[0]));
+</script>
+</body>
+</html>

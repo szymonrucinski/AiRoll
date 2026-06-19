@@ -97,3 +97,22 @@ model.pkl
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# --- scale-up & silver pipeline: keep .py scripts, exclude data/images/models ---
+scaleup/dl/
+scaleup/review*/
+scaleup/*.jsonl
+scaleup/movies.txt
+silver/dl/
+silver/imgs/
+silver/gold_test/
+silver/amb/
+silver/ambrev/
+silver/review*/
+silver/*.jsonl
+silver/*.json
+silver/labels*.txt
+*.pt
+*.onnx
+__pycache__/
+dataset_manager/key.json

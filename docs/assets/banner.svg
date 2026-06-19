@@ -1,0 +1,75 @@
+<svg width="1200" height="340" viewBox="0 0 1200 340" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a0606"/>
+      <stop offset="0.55" stop-color="#3a0a0a"/>
+      <stop offset="1" stop-color="#0d0605"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#dc2626" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#dc2626" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9d6"/>
+      <stop offset="0.5" stop-color="#f5a35a"/>
+      <stop offset="1" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="340" rx="18" fill="url(#glow)"/>
+
+  <!-- film strip edges with sprocket holes -->
+  <g fill="#000000" opacity="0.92">
+    <rect x="0" y="0" width="1200" height="34"/>
+    <rect x="0" y="306" width="1200" height="34"/>
+  </g>
+  <g fill="#1c1410">
+    <!-- top + bottom perforations -->
+    <g>
+      <rect x="24" y="9" width="26" height="16" rx="3"/><rect x="74" y="9" width="26" height="16" rx="3"/>
+      <rect x="124" y="9" width="26" height="16" rx="3"/><rect x="174" y="9" width="26" height="16" rx="3"/>
+      <rect x="224" y="9" width="26" height="16" rx="3"/><rect x="274" y="9" width="26" height="16" rx="3"/>
+      <rect x="324" y="9" width="26" height="16" rx="3"/><rect x="374" y="9" width="26" height="16" rx="3"/>
+      <rect x="424" y="9" width="26" height="16" rx="3"/><rect x="474" y="9" width="26" height="16" rx="3"/>
+      <rect x="524" y="9" width="26" height="16" rx="3"/><rect x="574" y="9" width="26" height="16" rx="3"/>
+      <rect x="624" y="9" width="26" height="16" rx="3"/><rect x="674" y="9" width="26" height="16" rx="3"/>
+      <rect x="724" y="9" width="26" height="16" rx="3"/><rect x="774" y="9" width="26" height="16" rx="3"/>
+      <rect x="824" y="9" width="26" height="16" rx="3"/><rect x="874" y="9" width="26" height="16" rx="3"/>
+      <rect x="924" y="9" width="26" height="16" rx="3"/><rect x="974" y="9" width="26" height="16" rx="3"/>
+      <rect x="1024" y="9" width="26" height="16" rx="3"/><rect x="1074" y="9" width="26" height="16" rx="3"/>
+      <rect x="1124" y="9" width="26" height="16" rx="3"/>
+    </g>
+    <g transform="translate(0,297)">
+      <rect x="24" y="9" width="26" height="16" rx="3"/><rect x="74" y="9" width="26" height="16" rx="3"/>
+      <rect x="124" y="9" width="26" height="16" rx="3"/><rect x="174" y="9" width="26" height="16" rx="3"/>
+      <rect x="224" y="9" width="26" height="16" rx="3"/><rect x="274" y="9" width="26" height="16" rx="3"/>
+      <rect x="324" y="9" width="26" height="16" rx="3"/><rect x="374" y="9" width="26" height="16" rx="3"/>
+      <rect x="424" y="9" width="26" height="16" rx="3"/><rect x="474" y="9" width="26" height="16" rx="3"/>
+      <rect x="524" y="9" width="26" height="16" rx="3"/><rect x="574" y="9" width="26" height="16" rx="3"/>
+      <rect x="624" y="9" width="26" height="16" rx="3"/><rect x="674" y="9" width="26" height="16" rx="3"/>
+      <rect x="724" y="9" width="26" height="16" rx="3"/><rect x="774" y="9" width="26" height="16" rx="3"/>
+      <rect x="824" y="9" width="26" height="16" rx="3"/><rect x="874" y="9" width="26" height="16" rx="3"/>
+      <rect x="924" y="9" width="26" height="16" rx="3"/><rect x="974" y="9" width="26" height="16" rx="3"/>
+      <rect x="1024" y="9" width="26" height="16" rx="3"/><rect x="1074" y="9" width="26" height="16" rx="3"/>
+      <rect x="1124" y="9" width="26" height="16" rx="3"/>
+    </g>
+  </g>
+
+  <!-- film reel mark -->
+  <g transform="translate(170,170)">
+    <circle r="74" fill="none" stroke="#dc2626" stroke-width="7" opacity="0.9"/>
+    <circle r="20" fill="#dc2626"/>
+    <g fill="#dc2626" opacity="0.85">
+      <circle cx="0" cy="-48" r="11"/><circle cx="0" cy="48" r="11"/>
+      <circle cx="-48" cy="0" r="11"/><circle cx="48" cy="0" r="11"/>
+      <circle cx="-34" cy="-34" r="9"/><circle cx="34" cy="34" r="9"/>
+      <circle cx="-34" cy="34" r="9"/><circle cx="34" cy="-34" r="9"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="300" y="158" font-size="104" font-weight="900" letter-spacing="-3" fill="url(#ink)">AiRoll</text>
+  <text x="304" y="206" font-size="23" font-weight="700" letter-spacing="6" fill="#f0d9c4">AI MOVIE EDITOR</text>
+  <text x="305" y="240" font-size="16" font-weight="500" letter-spacing="2.5" fill="#b98a72">shot-scale classifier · beat-cut montage · in your browser</text>
+</svg>

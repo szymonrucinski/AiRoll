@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a Shot — montage preview</title>
+<style>
+  :root { --bg:#14110e; --card:#1e1a16; --line:#352e26; --ink:#f3ece1; --dim:#9a8f80; --accent:#e0a458; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:16px/1.5 ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif; }
+  .wrap { max-width:780px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:28px; margin:0 0 4px; letter-spacing:-.02em; }
+  .sub { color:var(--dim); margin:0 0 24px; }
+  .tech { color:var(--accent); font-size:13px; margin:-18px 0 24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin:14px 0; }
+  .card h2 { font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:0 0 12px; }
+  label.pick { display:inline-block; border:1.5px dashed var(--line); border-radius:10px; padding:12px 16px;
+               cursor:pointer; color:var(--dim); margin-right:10px; }
+  label.pick.set { border-style:solid; border-color:var(--accent); color:var(--ink); }
+  label.pick input { display:none; }
+  button { background:var(--accent); color:#1a1206; border:0; border-radius:10px; padding:11px 20px;
+           font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  canvas { display:block; max-width:100%; border-radius:10px; background:#000; }
+  #wave { width:100%; height:90px; cursor:ew-resize; touch-action:none; }
+  .musctl { display:flex; align-items:center; gap:14px; margin-top:10px; color:var(--dim); font-size:14px; }
+  .musctl b { color:var(--ink); font-variant-numeric:tabular-nums; }
+  .bar { height:7px; background:#000; border-radius:4px; overflow:hidden; margin-top:10px; }
+  .bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .1s; }
+  #status { color:var(--dim); font-size:13px; min-height:18px; margin-top:10px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Montage preview</h1>
+  <p class="sub">Pick a video + a music track. Shot types are labelled top-right; choose the slice of music to play under it. Nothing uploads.</p>
+  <p class="tech">Rust · tract · ONNX · WebAssembly — all in-browser</p>
+
+  <div class="card">
+    <h2>1 · Sources</h2>
+    <label class="pick" id="vlab"><input type="file" id="vfile" accept="video/*">🎬 <span id="vname">choose video</span></label>
+    <label class="pick" id="alab"><input type="file" id="afile" accept="audio/*">🎵 <span id="aname">choose music</span></label>
+    <div style="margin-top:14px"><button id="analyze" disabled>Analyze shots</button></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+
+  <div class="card" id="musccard" style="display:none">
+    <h2>2 · Music window — drag the edges</h2>
+    <canvas id="wave"></canvas>
+    <div class="musctl">start <b id="ms">0.0s</b> · end <b id="me">0.0s</b> · length <b id="ml">0.0s</b></div>
+  </div>
+
+  <div class="card" id="prevcard" style="display:none">
+    <h2>3 · Preview</h2>
+    <canvas id="screen" width="640" height="360"></canvas>
+    <div style="margin-top:12px"><button id="play">▶ Play montage</button></div>
+  </div>
+
+  <div id="status">loading model…</div>
+  <p class="sub"><a href="./index.html">← single-image classifier</a></p>
+</div>
+
+<script type="module">
+import init, { init_model, classify } from "./pkg/shot_classifier.js";
+const MODEL_URL = "https://huggingface.co/szymonrucinski/what-a-shot/resolve/main/dinov2_shot_tract.onnx";
+
+const $ = id => document.getElementById(id);
+const statusEl = $("status");
+let ready = false, timeline = [], audioBuffer = null, musStart = 0, musEnd = 0;
+
+// hidden video + offscreen 224 crop canvas for classification
+const video = document.createElement("video");
+video.muted = true; video.playsInline = true;
+const clf = document.createElement("canvas"); clf.width = clf.height = 224;
+const clfCtx = clf.getContext("2d", { willReadFrequently: true });
+
+// ---- boot wasm + model ----
+(async () => {
+  await init();
+  statusEl.textContent = "downloading model (~87 MB, first load only)…";
+  const buf = await (await fetch(MODEL_URL)).arrayBuffer();
+  init_model(new Uint8Array(buf));
+  ready = true; statusEl.textContent = "model ready — choose a video and music.";
+})().catch(e => statusEl.textContent = "error: " + e);
+
+// ---- file pickers ----
+$("vfile").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  video.src = URL.createObjectURL(f);
+  video.onloadedmetadata = () => {
+    $("vlab").classList.add("set"); $("vname").textContent = f.name;
+    maybeEnable();
+  };
+});
+$("afile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  audioBuffer = await ac.decodeAudioData(await f.arrayBuffer());
+  musStart = 0; musEnd = audioBuffer.duration;
+  $("alab").classList.add("set"); $("aname").textContent = f.name;
+  $("musccard").style.display = ""; drawWave(); updateMus();
+  maybeEnable();
+});
+function maybeEnable(){ $("analyze").disabled = !(ready && video.duration && audioBuffer); }
+
+// ---- step 2: analyze shots (sample frames by seeking, classify each) ----
+// Cap total samples so a 20-min episode costs the same as a 1-min clip.
+$("analyze").addEventListener("click", analyze);
+function sampleAt(t){
+  return new Promise(res => {
+    video.onseeked = () => {
+      const s = 256 / Math.min(video.videoWidth, video.videoHeight);
+      const sw = 224 / s, sh = 224 / s;
+      clfCtx.drawImage(video, (video.videoWidth - sw) / 2, (video.videoHeight - sh) / 2,
+                        sw, sh, 0, 0, 224, 224);
+      res(new Uint8Array(clfCtx.getImageData(0, 0, 224, 224).data.buffer));
+    };
+    video.currentTime = Math.min(t, video.duration - 0.05);
+  });
+}
+async function analyze(){
+  $("analyze").disabled = true;
+  const dur = video.duration, MAX = 200, step = Math.max(0.4, dur / MAX);
+  timeline = [];
+  for (let t = 0, i = 0; t < dur; t += step, i++){
+    const rgba = await sampleAt(t);
+    timeline.push({ t, label: JSON.parse(classify(rgba))[0].label });
+    const pct = Math.min(100, (t / dur) * 100);
+    $("prog").style.width = pct + "%";
+    statusEl.textContent = `analyzing… ${Math.round(pct)}%  (${timeline.length} shots sampled)`;
+  }
+  $("prog").style.width = "100%";
+  statusEl.textContent = `done — ${timeline.length} samples. Pick a music window, then play.`;
+  $("prevcard").style.display = "";
+  // size the preview to the video's aspect
+  const C = $("screen"), maxW = 640;
+  const sc = Math.min(1, maxW / video.videoWidth);
+  C.width = Math.round(video.videoWidth * sc); C.height = Math.round(video.videoHeight * sc);
+  $("analyze").disabled = false;
+}
+function labelAt(t){
+  let lab = timeline.length ? timeline[0].label : "";
+  for (const e of timeline){ if (e.t <= t) lab = e.label; else break; }
+  return lab;
+}
+
+// ---- music waveform + draggable start/end ----
+const wave = $("wave"), wCtx = wave.getContext("2d");
+function drawWave(){
+  wave.width = wave.clientWidth || 700; wave.height = 90;
+  const data = audioBuffer.getChannelData(0), W = wave.width, H = wave.height, step = data.length / W;
+  wCtx.clearRect(0, 0, W, H);
+  // selected region
+  wCtx.fillStyle = "rgba(224,164,88,.18)";
+  wCtx.fillRect(musStart / audioBuffer.duration * W, 0,
+                (musEnd - musStart) / audioBuffer.duration * W, H);
+  wCtx.strokeStyle = "#6b6051"; wCtx.beginPath();
+  for (let x = 0; x < W; x++){
+    let mn = 1, mx = -1;
+    for (let j = 0; j < step; j++){ const v = data[(x * step + j) | 0]; if (v < mn) mn = v; if (v > mx) mx = v; }
+    wCtx.moveTo(x, (1 + mn) * H / 2); wCtx.lineTo(x, (1 + mx) * H / 2);
+  }
+  wCtx.stroke();
+  // handles
+  wCtx.fillStyle = "#e0a458";
+  for (const s of [musStart, musEnd]){ const x = s / audioBuffer.duration * W; wCtx.fillRect(x - 1.5, 0, 3, H); }
+}
+function updateMus(){
+  $("ms").textContent = musStart.toFixed(1) + "s";
+  $("me").textContent = musEnd.toFixed(1) + "s";
+  $("ml").textContent = (musEnd - musStart).toFixed(1) + "s";
+}
+let drag = null;
+wave.addEventListener("pointerdown", e => {
+  const t = (e.offsetX / wave.width) * audioBuffer.duration;
+  drag = Math.abs(t - musStart) < Math.abs(t - musEnd) ? "s" : "e";
+  wave.setPointerCapture(e.pointerId); moveHandle(e);
+});
+wave.addEventListener("pointermove", e => { if (drag) moveHandle(e); });
+wave.addEventListener("pointerup", () => drag = null);
+function moveHandle(e){
+  const t = Math.max(0, Math.min(audioBuffer.duration, (e.offsetX / wave.width) * audioBuffer.duration));
+  if (drag === "s") musStart = Math.min(t, musEnd - 0.2); else musEnd = Math.max(t, musStart + 0.2);
+  drawWave(); updateMus();
+}
+
+// ---- step 3: preview — smooth playback, label looked up per frame ----
+let audioCtx = null, srcNode = null;
+$("play").addEventListener("click", startPreview);
+function startPreview(){
+  if (srcNode){ try { srcNode.stop(); } catch {} }
+  const C = $("screen"), ctx = C.getContext("2d");
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume();
+  srcNode = audioCtx.createBufferSource();
+  srcNode.buffer = audioBuffer; srcNode.connect(audioCtx.destination);
+  srcNode.start(0, musStart, musEnd - musStart);   // play only the chosen window
+  video.currentTime = 0; video.play();
+
+  function frame(){
+    if (video.paused || video.ended){ try { srcNode.stop(); } catch {} return; }
+    ctx.drawImage(video, 0, 0, C.width, C.height);
+    const label = labelAt(video.currentTime);
+    ctx.font = "700 26px ui-sans-serif,sans-serif";
+    const tw = ctx.measureText(label).width, pad = 12, m = 16;
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fillRect(C.width - tw - pad * 2 - m, m, tw + pad * 2, 40);
+    ctx.fillStyle = "#e0a458";
+    ctx.fillText(label, C.width - tw - pad - m, m + 28);   // ← TOP-RIGHT overlay
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

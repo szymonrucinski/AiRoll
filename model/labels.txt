@@ -1,0 +1,8 @@
+ambiguous
+closeUp
+detail
+extremeLongShot
+fullShot
+longShot
+mediumCloseUp
+mediumShot

@@ -1,0 +1,10 @@
+Classify the SHOT SCALE of this film frame. Output only the JSON schema. Definitions:
+- extremeLongShot: subject tiny, vast landscape/environment dominates
+- longShot: full body visible with lots of surrounding environment
+- fullShot: full body head-to-toe roughly filling the frame height
+- mediumShot: person framed from the waist up
+- mediumCloseUp: from chest/shoulders up
+- closeUp: head/face fills the frame
+- detail: extreme close-up of a part or object (eye, hand, prop)
+- ambiguous: shot scale genuinely unclear
+Pick the single best match and a confidence 0-1.
